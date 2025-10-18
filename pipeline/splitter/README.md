@@ -1,5 +1,5 @@
 # Splitter
-Le Splitter est le premier composant de la pipeline d'ingestion de données. Il écoute les messages sur la queue NATS `MEASUREMENTS.to_split` et les divise en messages plus petits avant de les envoyer à la queue `MEASUREMENTS.to_clean`.
+Le Splitter est le premier composant de la pipeline d'ingestion de données. Il écoute les messages sur la queue NATS `MEASUREMENT.to_split` et les divise en messages plus petits avant de les envoyer à la queue `MEASUREMENT.to_save`.
 
 ## Démarrage
 ### Dev
@@ -8,7 +8,7 @@ Le Splitter est le premier composant de la pipeline d'ingestion de données. Il 
 `start-pipeline-prod.sh` démarre automatiquement le Splitter avec les autres composants de la pipeline de manière sécurisée avec TLS et authentification via NKey.
 
 ## Utilisation
-### Schéma donnée entrant : `MEASUREMENTS.to_split`
+### Schéma donnée entrant : `MEASUREMENT.to_split`
 Le message entrant a la structure suivante :
 
 ```json
@@ -26,7 +26,7 @@ Le message entrant a la structure suivante :
 }
 ```
 
-### Schéma donnée sortant : `MEASUREMENTS.to_clean`
+### Schéma donnée sortant : `MEASUREMENT.to_clean`
 Le message sortant a la structure suivante :
 
 ```json

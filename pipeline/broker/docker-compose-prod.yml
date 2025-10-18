@@ -18,7 +18,9 @@ services:
     command: ["node", "dist/main.js"]
     depends_on:
       - nats
-    env_file: ".env.production"
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - NATS_CA_FILE=${NATS_CA_FILE}
     volumes:
       - ./configuration/certs:/app/configuration/certs:ro
     networks:

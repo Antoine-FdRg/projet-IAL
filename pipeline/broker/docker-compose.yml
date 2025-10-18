@@ -15,7 +15,8 @@ services:
     command: ["node", "dist/main.js"]
     depends_on:
       - nats
-    env_file: ".env.docker"
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
     networks:
       - nats-network
 networks:

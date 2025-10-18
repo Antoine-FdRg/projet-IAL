@@ -4,7 +4,10 @@ services:
     container_name: box-broker-client
     depends_on:
       - setup-broker
-    env_file: ".env.docker"
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - PUSH_SCHEDULE_INTERVAL=10
+      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_clean
     networks:
       - nats-network
 networks:

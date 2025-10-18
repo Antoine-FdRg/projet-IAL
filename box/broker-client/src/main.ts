@@ -4,7 +4,7 @@ dotenv.config();
 const getConnectionOptions: () => ConnectionOptions = () => {
 
   if (!process.env.NATS_SERVER) {
-    throw new Error("Veuillez définir les variables d'environnement NATS_SERVER");
+    throw new Error("Veuillez définir la variable d'environnement NATS_SERVER");
   }
 
   if (process.env.NATS_SERVER?.startsWith("http://")) {
@@ -13,7 +13,7 @@ const getConnectionOptions: () => ConnectionOptions = () => {
   return getProdConnectionOptions();
 };
 
-function getProdConnectionOptions() {
+const getProdConnectionOptions = () => {
   if (!process.env.NATS_SEED || !process.env.NATS_CA_FILE) {
     throw new Error("Veuillez définir les variables d'environnement NATS_SEED et NATS_CA_FILE");
   }
@@ -31,7 +31,7 @@ function getProdConnectionOptions() {
   } as ConnectionOptions;
 }
 
-function getDevConnectionOptions() {
+const getDevConnectionOptions = () => {
   console.log("🔌 Connexion au serveur NATS de dev avec les paramètres suivants :");
   console.log(`   - NATS_SERVER: ${process.env.NATS_SERVER}`);
   return {
@@ -39,15 +39,24 @@ function getDevConnectionOptions() {
   } as ConnectionOptions;
 }
 
+const getPublishQueue = () => {
+  if (!process.env.NATS_PUBLISH_QUEUE) {
+    throw new Error("Veuillez définir la variable d'environnement NATS_PUBLISH_QUEUE");
+  }
+  console.log(`   - NATS_PUBLISH_QUEUE: ${process.env.NATS_PUBLISH_QUEUE}`);
+  return process.env.NATS_PUBLISH_QUEUE;
+}
+
 async function main() {
   const nc = await connect(getConnectionOptions());
+  const publishQueue = getPublishQueue();
   const js = nc.jetstream();
   const sc = StringCodec();
   console.log("Connecté au serveur NATS");
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 5; i++) {
     const msg = `Mesure #${i}`;
-    await js.publish("measurement.to_split", sc.encode(msg));
+    await js.publish(publishQueue, sc.encode(msg));
     console.log(`📤 Envoyé : ${msg}`);
 
   }

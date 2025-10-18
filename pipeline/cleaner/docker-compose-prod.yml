@@ -1,13 +1,14 @@
 services:
-  box-broker-client:
-    image: ial/box-broker-client
-    container_name: box-broker-client-prod
+  cleaner:
+    image: ial/cleaner
+    container_name: cleaner-prod
+    command: ["node", "dist/main.js"]
     depends_on:
       - setup-broker
     environment:
       - NATS_SERVER=${NATS_SERVER}
-      - PUSH_SCHEDULE_INTERVAL=10
-      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_clean
+      - NATS_CONSUME_QUEUE=MEASUREMENT.to_clean
+      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_normalize
       - NATS_CA_FILE=${NATS_CA_FILE}
     volumes:
       - ./configuration/certs:/app/configuration/certs:ro

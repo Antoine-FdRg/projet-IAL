@@ -38,19 +38,29 @@ function getDevConnectionOptions() {
     servers: process.env.NATS_SERVER,
   } as ConnectionOptions;
 }
+
+const getConsumeQueue = () => {
+  if (!process.env.NATS_CONSUME_QUEUE) {
+    throw new Error("Veuillez définir la variable d'environnement NATS_CONSUME_QUEUE");
+  }
+  console.log(`   - NATS_CONSUME_QUEUE: ${process.env.NATS_CONSUME_QUEUE}`);
+  return process.env.NATS_CONSUME_QUEUE;
+}
+
 async function main() {
 
   const nc = await connect(getConnectionOptions());
+  const consumeQueue = getConsumeQueue();
   const js = nc.jetstream();
   const sc = StringCodec();
 
   const opts = consumerOpts();
-  opts.durable("measurement-consumer");
+  opts.durable("MEASUREMENT-consumer");
   opts.manualAck();
   opts.ackExplicit();
-  opts.deliverTo("measurement-workers");
+  opts.deliverTo("MEASUREMENT-workers");
 
-  const sub = await js.subscribe("measurement.to_split", opts);
+  const sub = await js.subscribe(consumeQueue, opts);
   console.log("👂 En attente de messages...");
 
   for await (const m of sub) {

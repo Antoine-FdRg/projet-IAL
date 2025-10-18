@@ -46,15 +46,15 @@ async function main() {
   const jsm = await nc.jetstreamManager();
 
   // Supprime le stream s’il existe déjà
-  try { await jsm.streams.delete("MEASUREMENTS"); } catch { }
+  try { await jsm.streams.delete("MEASUREMENT"); } catch { }
 
   // Crée un stream JetStream
   await jsm.streams.add({
-    name: "MEASUREMENTS",
-    subjects: ["measurement.to_split"],
+    name: "MEASUREMENT",
+    subjects: ["MEASUREMENT.*"],
   });
 
-  console.log("✅ Stream 'MEASUREMENTS' créé !");
+  console.log("✅ Stream 'MEASUREMENT.*' créé !");
   await nc.close();
 }
 
