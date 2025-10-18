@@ -1,0 +1,12 @@
+services:
+  splitter:
+    image: ial/splitter
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    env_file: ".env.docker"
+    networks:
+      - nats-network
+networks:
+  nats-network:
+    driver: bridge

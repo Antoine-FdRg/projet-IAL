@@ -1,0 +1,22 @@
+services:
+  nats:
+    image: nats:latest
+    hostname: nats-broker
+    container_name: nats-broker
+    ports:
+      - "4222:4222"
+    command: ["-js"]
+    networks:
+      - nats-network
+
+  setup-broker:
+    image: ial/broker-setup-broker
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - nats
+    env_file: ".env.docker"
+    networks:
+      - nats-network
+networks:
+  nats-network:
+    driver: bridge
