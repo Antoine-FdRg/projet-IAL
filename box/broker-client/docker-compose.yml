@@ -1,7 +1,7 @@
 services:
   box-broker-client:
     image: ial/box-broker-client
-    command: ["node", "dist/main.js"]
+    container_name: box-broker-client
     depends_on:
       - setup-broker
     env_file: ".env.docker"

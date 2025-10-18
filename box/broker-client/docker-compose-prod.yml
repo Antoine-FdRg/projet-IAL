@@ -2,7 +2,6 @@ services:
   box-broker-client:
     image: ial/box-broker-client
     container_name: box-broker-client-prod
-    command: ["node", "dist/main.js"]
     depends_on:
       - setup-broker
     env_file: ".env.production"
