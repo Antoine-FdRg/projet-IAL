@@ -6,12 +6,13 @@ WORKDIR /app
 
 # Installe uniquement les dépendances nécessaires à la compilation
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 
 # Copie du code source et compilation
 COPY tsconfig.json ./
 COPY src ./src
-RUN npx tsc
+
+RUN npx esbuild src/main.ts --bundle --platform=node --target=node20 --outfile=dist/main.js --minify
 
 # =========================
 # Étape 2 : Runtime minimal
@@ -21,11 +22,6 @@ WORKDIR /app
 
 # Copie uniquement le code JS compilé
 COPY --from=builder /app/dist ./dist
-COPY configuration/certs ./configuration/certs
-COPY package*.json ./
-
-# Installe uniquement les dépendances runtime (sans dev)
-RUN npm ci --omit=dev --ignore-scripts --no-audit
 
 # Commande par défaut : exécuter le JS compilé
 CMD ["node", "dist/main.js"]

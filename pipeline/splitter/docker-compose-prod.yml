@@ -1,0 +1,15 @@
+services:
+  splitter:
+    image: ial/splitter
+    container_name: splitter-prod
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    env_file: ".env.production"
+    volumes:
+      - ./configuration/certs:/app/configuration/certs:ro
+    networks:
+      - nats-network-prod
+networks:
+  nats-network-prod:
+    driver: bridge

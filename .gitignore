@@ -217,3 +217,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Security ###
+*.pem
+*.key
+*.crt

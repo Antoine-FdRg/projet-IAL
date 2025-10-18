@@ -15,7 +15,7 @@ openssl genrsa -out server.key 2048
 
 **CSR (demande de signature)**
 
-openssl req -new -key server.key -out server.csr -subj "/CN=nats"
+openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
 
 **Signer le certificat serveur avec la CA**
 
