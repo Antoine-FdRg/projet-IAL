@@ -47,9 +47,35 @@ const getPublishQueue = () => {
   return process.env.NATS_PUBLISH_QUEUE;
 }
 
+const checkBrokerHealth = async (connectionOptions: ConnectionOptions): Promise<boolean> => {
+  try {
+    console.log("🔍 Vérification de la connexion au broker NATS...");
+    const nc = await connect(connectionOptions);
+
+    // Test simple de ping pour vérifier que le broker répond
+    const rtt = await nc.rtt();
+    console.log(`✅ Broker joignable (RTT: ${rtt}ms)`);
+
+    await nc.close();
+    return true;
+  } catch (error) {
+    console.warn("⚠️  Le broker NATS n'est pas joignable:", error instanceof Error ? error.message : error);
+    return false;
+  }
+};
+
 async function main() {
-  const nc = await connect(getConnectionOptions());
+  const connectionOptions = getConnectionOptions();
   const publishQueue = getPublishQueue();
+
+  // Vérification de la santé du broker
+  const isBrokerHealthy = await checkBrokerHealth(connectionOptions);
+  if (!isBrokerHealthy) {
+    console.warn("⚠️  Impossible de joindre le broker NATS. Arrêt du programme.");
+    process.exit(1);
+  }
+
+  const nc = await connect(connectionOptions);
   const js = nc.jetstream();
   const sc = StringCodec();
   console.log("Connecté au serveur NATS");
