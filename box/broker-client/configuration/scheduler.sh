@@ -5,7 +5,7 @@ set -e
 if [ -z "${BOX_PUSH_SCHEDULE_INTERVAL}" ]; then
   echo "⚠️  WARNING: BOX_PUSH_SCHEDULE_INTERVAL is not set. Defaulting to 1800 seconds."
 else
-  echo "✅  BOX_PUSH_SCHEDULE_INTERVAL is set to ${BOX_PUSH_SCHEDULE_INTERVAL} seconds.
+  echo "✅  BOX_PUSH_SCHEDULE_INTERVAL is set to ${BOX_PUSH_SCHEDULE_INTERVAL} seconds."
 fi
 
 # Boucle infinie : exécute node dist/main.js toutes les 30 minutes
