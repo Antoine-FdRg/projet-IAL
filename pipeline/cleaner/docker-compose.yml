@@ -1,0 +1,16 @@
+services:
+  cleaner:
+    image: ial/cleaner
+    container_name: cleaner
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - NATS_CONSUME_QUEUE=MEASUREMENT.to_clean
+      - CLEANER_PRODUCER_QUEUE=${CLEANER_PRODUCER_QUEUE}
+    networks:
+      - nats-network
+networks:
+  nats-network:
+    driver: bridge

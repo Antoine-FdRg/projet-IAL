@@ -1,0 +1,15 @@
+services:
+  box-broker-client:
+    image: ial/box-broker-client
+    container_name: box-broker-client
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - BOX_PUSH_SCHEDULE_INTERVAL=${BOX_PUSH_SCHEDULE_INTERVAL}
+      - BOX_PRODUCER_QUEUE=${BOX_PRODUCER_QUEUE}
+    networks:
+      - nats-network
+networks:
+  nats-network:
+    driver: bridge
