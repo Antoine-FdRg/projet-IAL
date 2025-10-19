@@ -1,13 +1,13 @@
 # Broker NATS
-NATs ets un middleware orienté messages léger et performant. Il est utilisé dans cette architecture pour faire transiter les messages entre les différents services la pipeline d'ingestion.
+NATS est un middleware orienté messages léger et performant. Il est utilisé dans cette architecture pour faire transiter les messages entre les différents services la pipeline d'ingestion.
 
 ## Configuration
 Le broker NATS est configuré en 2 étapes :
-- l'application nodejs qui met en place la persistance des messages
+- l'application NodeJS qui met en place la persistance des messages
 - le fichier de configuration passé au container (uniquement en version *production*)
 
-### Application Nodejs
-l'application est chargé d'initialiser les streams NATS. Un stream permet de persister les messages échangés sur un sujet donné. [doc officielle](https://docs.nats.io/nats-concepts/jetstream/streams)
+### Application NodeJS
+L'application est chargé d'initialiser les streams NATS. Un stream permet de persister les messages échangés sur un sujet donné. [Voir la doc officielle](https://docs.nats.io/nats-concepts/jetstream/streams)
 
 ### Fichier de configuration NATS (production)
 Le fichier de configuration est passé au container NATS via un volume docker. De cette manière la configuration n'est pas stcokée dans l'image docker. Deux sécurisations sont mises en place : TLS et NKEYS.
@@ -48,4 +48,4 @@ openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
 ```shell
 openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
 ```
-- Le broker requiert `server.crt` et `server.key` pour démarrer en TLS. Le client NATS requiert `ca.pem` pour vérifier l'identité du broker.
+- Le broker requiert `server.crt` et `server.key` pour démarrer en TLS. Le client NATS requiert `ca.pem` pour vérifier l'identité du broker lorsqu'il s'y connecte

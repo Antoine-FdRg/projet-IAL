@@ -1,10 +1,22 @@
 # projet-IAL
+## Configuration
+### Configuration générale
+Le fichier `.env.queues` à la racine du projet contient les noms des différentes queues utilisées dans la pipeline. Il permet de définir l'orchestration des différents nodes de la pipeline en fonction des queues configurées.
+### Configuration dev
+Le fichier `.env.docker` à la racine du projet contient les variables d'environnement suivnates :
+- NATS_URL : L'URL du broker NATS
+- BOX_PUSH_SCHEDULE_INTERVAL : L'intervalle de push des données depuis le boitier (box) vers le broker NATS en millisecondes.
+### Configuration prod 
+Le fichier `.env.production` à la racine du projet contient les variables d'environnement suivnates : 
+- NATS_URL : L'URL du broker NATS
+- BOX_PUSH_SCHEDULE_INTERVAL : L'intervalle de push des données depuis le boitier (box) vers le broker NATS en millisecondes.
+- NATS_CA_FILE : Le chemin vers le certificat CA pour la connexion TLS au broker NATS.
+- NKEY_SEED_* : La seed de la NKey pour chaque service de la pipeline.
 ## Démarrage
-### Configuration
 ### Construire toutes les images docker
 Dans un git bash ou wsl :
 ```bash
-./start-all.sh
+./build-all.sh
 ```
 ### Démarrer la pipeline complète
 Dans un git bash ou wsl :
@@ -127,13 +139,3 @@ Queue : MEASUREMENT.to_save
     "toTimestamp": string,
 }
 ```
-
-
-
-### Configuration
-#### Configuration commune
-Le fichier `.env.queues` à la racine du projet contient les noms des différentes queues utilisées dans la pipeline. Il permet de définir l'orchestration des différents nodes de la pipeline en fonction des queues configurées.
-#### Configuration dev : `./start-pipeline.sh` 
-La configuration de la pipeline en mode développement est simple. Le fichier `.env.docker` à la racine du projet contient les variables d'environnement définissant l'URL du broker NATS ainsi que l'intervalle de push des données depuis le boitier (box) vers le broker NATS.
-#### Configuration prod : `./start-pipeline-prod.sh`
-La configuration de la pipeline en mode production est plus complexe. Le fichier `.env.production` à la racine du projet contient, comme pour le mode dev les variables d'environnement définissant l'URL du broker NATS et l'intervalle de push des données depuis le boitier (box) vers le broker NATS. Mais en plus, il y a aussi les chemins vers les certificats TLS et les seeds des nkeys pour chaque service de la pipeline. 
