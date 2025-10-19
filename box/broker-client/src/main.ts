@@ -14,8 +14,11 @@ const getConnectionOptions: () => ConnectionOptions = () => {
 };
 
 const getProdConnectionOptions = () => {
-  if (!process.env.NATS_SEED || !process.env.NATS_CA_FILE) {
-    throw new Error("Veuillez définir les variables d'environnement NATS_SEED et NATS_CA_FILE");
+  if (!process.env.NATS_SEED) {
+    throw new Error("Veuillez définir la variable d'environnement NATS_SEED");
+  }
+  if (!process.env.NATS_CA_FILE) {
+    throw new Error("Veuillez définir la variable d'environnement NATS_CA_FILE");
   }
   console.log("🔌 Connexion au serveur NATS sécurisé avec les paramètres suivants :");
   console.log(`   - NATS_SERVER: ${process.env.NATS_SERVER}`);
@@ -40,11 +43,11 @@ const getDevConnectionOptions = () => {
 }
 
 const getPublishQueue = () => {
-  if (!process.env.NATS_PUBLISH_QUEUE) {
-    throw new Error("Veuillez définir la variable d'environnement NATS_PUBLISH_QUEUE");
+  if (!process.env.BOX_PRODUCER_QUEUE) {
+    throw new Error("Veuillez définir la variable d'environnement BOX_PRODUCER_QUEUE");
   }
-  console.log(`   - NATS_PUBLISH_QUEUE: ${process.env.NATS_PUBLISH_QUEUE}`);
-  return process.env.NATS_PUBLISH_QUEUE;
+  console.log(`   - BOX_PRODUCER_QUEUE: ${process.env.BOX_PRODUCER_QUEUE}`);
+  return process.env.BOX_PRODUCER_QUEUE;
 }
 
 const checkBrokerHealth = async (connectionOptions: ConnectionOptions): Promise<boolean> => {

@@ -6,9 +6,10 @@ services:
       - setup-broker
     environment:
       - NATS_SERVER=${NATS_SERVER}
-      - PUSH_SCHEDULE_INTERVAL=10
-      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_clean
+      - BOX_PUSH_SCHEDULE_INTERVAL=${BOX_PUSH_SCHEDULE_INTERVAL}
+      - BOX_PRODUCER_QUEUE=${BOX_PRODUCER_QUEUE}
       - NATS_CA_FILE=${NATS_CA_FILE}
+      - NATS_SEED=${NKEY_SEED_BOX}
     volumes:
       - ./configuration/certs:/app/configuration/certs:ro
     networks:

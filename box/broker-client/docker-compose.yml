@@ -6,8 +6,8 @@ services:
       - setup-broker
     environment:
       - NATS_SERVER=${NATS_SERVER}
-      - PUSH_SCHEDULE_INTERVAL=10
-      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_clean
+      - BOX_PUSH_SCHEDULE_INTERVAL=${BOX_PUSH_SCHEDULE_INTERVAL}
+      - BOX_PRODUCER_QUEUE=${BOX_PRODUCER_QUEUE}
     networks:
       - nats-network
 networks:

@@ -8,8 +8,9 @@ services:
     environment:
       - NATS_SERVER=${NATS_SERVER}
       - NATS_CONSUME_QUEUE=MEASUREMENT.to_clean
-      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_normalize
+      - CLEANER_PRODUCER_QUEUE=${CLEANER_PRODUCER_QUEUE}
       - NATS_CA_FILE=${NATS_CA_FILE}
+      - NATS_SEED=${NKEY_SEED_CLEANER}
     volumes:
       - ./configuration/certs:/app/configuration/certs:ro
     networks:

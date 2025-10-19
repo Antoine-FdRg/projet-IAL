@@ -3,7 +3,6 @@ services:
     image: nats:latest
     container_name: nats-broker-prod
     hostname: nats-broker
-    env_file: ".env.production"
     ports:
       - 4333:4222
     volumes:
@@ -21,6 +20,7 @@ services:
     environment:
       - NATS_SERVER=${NATS_SERVER}
       - NATS_CA_FILE=${NATS_CA_FILE}
+      - NATS_SEED=${NKEY_SEED_SETUPSTREAM}
     volumes:
       - ./configuration/certs:/app/configuration/certs:ro
     networks:

@@ -8,7 +8,7 @@ services:
     environment:
       - NATS_SERVER=${NATS_SERVER}
       - NATS_CONSUME_QUEUE=MEASUREMENT.to_clean
-      - NATS_PUBLISH_QUEUE=MEASUREMENT.to_normalize
+      - CLEANER_PRODUCER_QUEUE=${CLEANER_PRODUCER_QUEUE}
     networks:
       - nats-network
 networks:
