@@ -1,0 +1,30 @@
+services:
+  nats:
+    image: nats:latest
+    container_name: nats-broker-prod
+    hostname: nats-broker
+    ports:
+      - 4333:4222
+    volumes:
+      - ./configuration:/etc/nats/
+    command: ["-c", "/etc/nats/nats.conf", "-js"]
+    networks:
+      - nats-network-prod
+
+  setup-broker:
+    image: ial/broker-setup-broker
+    container_name: setup-broker-prod
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - nats
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - NATS_CA_FILE=${NATS_CA_FILE}
+      - NATS_SEED=${NKEY_SEED_SETUPSTREAM}
+    volumes:
+      - ./configuration/certs:/app/configuration/certs:ro
+    networks:
+      - nats-network-prod
+networks:
+  nats-network-prod:
+    driver: bridge
