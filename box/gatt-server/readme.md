@@ -1,9 +1,12 @@
-# Box – MongoDB + GATT Server
+# 📦 Box – MongoDB + GATT Server (REST Version)
 
-Ce repo contient :
+Ce dépôt contient l’infrastructure et le code d’un système complet permettant de :
 
-- **Infra MongoDB** (Docker + script d’init) pour stocker les messages reçus de l’extérieur.
-- **Serveur GATT (Node.js/TypeScript)** qui se connecte à MongoDB et enregistre les messages (depuis BLE ou autres sources).
+- Héberger une base **MongoDB** (via Docker) pour stocker des messages JSON entrants.
+- Démarrer un **serveur Node.js/TypeScript** (REST) connecté à cette base.
+- Enregistrer et consulter les messages reçus depuis des sources externes (capteurs, boîtiers, etc.).
+
+---
 
 ## 📁 Arborescence
 
@@ -12,18 +15,15 @@ box/
   infra/
     mongo/
       init/
-        001-init.js           # création DB, user, index (TTL, uniques)
-      docker-compose.yml      # Mongo + Mongo Express
+        001-init.js           # Script d’initialisation de la base
+      docker-compose.yml      # Conteneur MongoDB + Mongo Express
   gatt-server/
     src/
-      db/
-        index.ts              # connexion Mongoose
-        models/
-          Message.ts          # schéma Message
-        repositories/
-          messageRepo.ts      # saveMessage/getRecentMessages
-      index.ts                # bootstrap de test (sans BLE)
-    .env                      # URI Mongo
+      db.js                   # Connexion Mongoose
+      models/
+        Message.ts            # Schéma Mongoose pour les messages
+      index.ts                # Exemple de bootstrap (sans BLE)
+    .env                      # URI MongoDB
     package.json
     tsconfig.json
   README.md
@@ -33,276 +33,88 @@ box/
 
 ## 🚀 Démarrage rapide
 
-### 1) Prérequis
+### 1️⃣ Prérequis
 
-- **Docker Desktop** (Windows/macOS/Linux)
-- **Node.js** ≥ 18 + **npm**
-- (Optionnel) `mongosh` (sinon on utilise `docker exec`)
+- 🐋 **Docker Desktop** (Windows/macOS/Linux)
+- 🟢 **Node.js ≥ 18** + **npm**
+- (Optionnel) `mongosh` pour interagir directement avec la base.
 
-### 2) Lancer l’infra Mongo
+---
 
-Depuis `box/infra/mongo` :
+### 2️⃣ Lancer l’infrastructure MongoDB
+
+Depuis le dossier :
 
 ```bash
+cd box/infra/mongo
 docker compose up -d
 ```
 
-- MongoDB : `localhost:27017`
-- Mongo Express (UI) : http://localhost:8081 (login: `admin` / `admin`)
+📍 Accès :
 
-> ⚠️ Les scripts d’init (dans `init/`) ne tournent **qu’au 1er démarrage** d’un volume vide.  
-> Si vous les avez ajoutés après, faites un reset :  
-> `docker compose down -v && docker compose up -d`.
+- **MongoDB** → `mongodb://localhost:27017`
+- **Mongo Express (interface web)** → [http://localhost:8081](http://localhost:8081)
+  - Identifiant : `admin`
+  - Mot de passe : `admin`
 
-### 3) Configurer le serveur GATT
+> ⚠️ Les scripts d’init (`init/`) ne sont exécutés qu’au **premier lancement** sur un volume vide.  
+> Si vous les avez ajoutés après, faites un reset :
+>
+> ```bash
+> docker compose down -v && docker compose up -d
+> ```
+
+---
+
+### 3️⃣ Configurer le serveur Node.js
 
 Depuis `box/gatt-server` :
 
 ```bash
-npm i
+npm install
 ```
 
-Créez `box/gatt-server/.env` (une seule ligne, sans guillemets) **Option A (user app dans admin)** :
+Créez le fichier `.env` :
 
 ```
 MONGODB_URI=mongodb://app:root@localhost:27017/?authSource=admin
 ```
 
-ou **Option B (user app dans messagesdb)** :
+---
 
-```
-MONGODB_URI=mongodb://app:root@localhost:27017/?authSource=messagesdb
-```
-
-> Les deux options fonctionnent — choisissez celle qui correspond à la création de votre user dans `001-init.js`.
-
-Lancez un test :
+### 4️⃣ Démarrer le serveur
 
 ```bash
 npm run dev
 ```
 
-Vous devez voir :
+✅ Si tout est correct, vous verrez :
 
 ```
 [mongo] connecté
-Messages récents: ...
+Messages récents: [...]
 ```
 
 ---
 
-## 🛠️ Détails techniques
+## 🔐 Sécurité (bonnes pratiques)
 
-### A) Docker Compose (infra/mongo/docker-compose.yml)
+- ❌ **Ne pas committer** le fichier `.env`
+- 🔐 Utiliser un **compte non-root** pour l’application
+- 🔑 Choisir un mot de passe fort (et l’URL-encoder si besoin)
+- 🌐 En production : préférer **MongoDB Atlas**, avec des _Network Rules_ et un _user par environnement_
 
-```yaml
-services:
-  mongo:
-    image: mongo:7
-    container_name: mongo
-    restart: unless-stopped
-    ports: ["27017:27017"]
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpwd
-    volumes:
-      - mongo_data:/data/db
-      - ./init/:/docker-entrypoint-initdb.d/:ro
+---
 
-  mongo-express:
-    image: mongo-express:1
-    container_name: mongo-express
-    restart: unless-stopped
-    ports: ["8081:8081"]
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpwd
-      ME_CONFIG_MONGODB_URL: mongodb://root:rootpwd@mongo:27017/?authSource=admin
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
+## 🧠 Pour aller plus loin
 
-volumes:
-  mongo_data:
-```
+- Ajouter une API REST (`POST /ingest`, `GET /messages`)
+- Ajouter un frontend minimal (React / Angular)
+- Intégrer un service d’analyse des données (ex: Grafana / InfluxDB)
+- Dockeriser le serveur Node.js pour un déploiement complet
 
-### B) Script d’init Mongo (infra/mongo/init/001-init.js)
+---
 
-```js
-db = db.getSiblingDB("messagesdb");
+## 👩‍💻 Auteur
 
-db.createUser({
-  user: "app",
-  pwd: "root",
-  roles: [{ role: "readWrite", db: "messagesdb" }],
-});
-
-db.createCollection("messages");
-db.messages.createIndex({ receivedAt: -1 });
-db.messages.createIndex({ messageId: 1 }, { unique: true });
-db.messages.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
-```
-
-### C) Configuration Node (gatt-server)
-
-**package.json**
-
-```json
-{
-  "name": "gatt-server",
-  "version": "1.0.0",
-  "type": "commonjs",
-  "scripts": {
-    "dev": "ts-node src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "mongoose": "^8.6.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.5.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
-  }
-}
-```
-
-**tsconfig.json**
-
-```json
-{
-  "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": false,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "rootDir": "src",
-    "outDir": "dist"
-  },
-  "include": ["src"]
-}
-```
-
-**src/db/index.ts**
-
-```ts
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
-
-const uri = process.env.MONGODB_URI!;
-if (!uri) throw new Error("MONGODB_URI manquant dans .env");
-
-export async function connectMongo() {
-  if (mongoose.connection.readyState === 1) return;
-  console.log("[env] uri:", uri.replace(/(\/\/).+(:).+(@)/, "$1****$2****$3"));
-  await mongoose.connect(uri, {
-    dbName: "messagesdb",
-    serverSelectionTimeoutMS: 8000,
-    appName: "archi-gatt-server",
-  } as any);
-  console.log("[mongo] connecté");
-}
-
-export async function disconnectMongo() {
-  await mongoose.disconnect();
-}
-```
-
-**src/db/models/Message.ts**
-
-```ts
-import mongoose, { Schema, InferSchemaType } from "mongoose";
-
-const MessageSchema = new Schema(
-  {
-    messageId: { type: String, index: true, unique: true, sparse: true },
-    payload: { type: Schema.Types.Mixed, required: true },
-    source: { type: String, default: "unknown" },
-    metadata: { type: Schema.Types.Mixed },
-    receivedAt: { type: Date, default: () => new Date(), index: -1 },
-    expireAt: { type: Date, default: null, index: { expireAfterSeconds: 0 } },
-  },
-  { versionKey: false }
-);
-
-export type MessageDoc = InferSchemaType<typeof MessageSchema>;
-export const MessageModel = mongoose.model(
-  "Message",
-  MessageSchema,
-  "messages"
-);
-```
-
-**src/db/repositories/messageRepo.ts**
-
-```ts
-import crypto from "crypto";
-import { MessageModel } from "../models/Message";
-
-export async function saveMessage({
-  messageId,
-  payload,
-  source,
-  metadata,
-  ttlDays,
-}: {
-  messageId?: string;
-  payload: any;
-  source?: string;
-  metadata?: Record<string, any>;
-  ttlDays?: number;
-}) {
-  const expireAt = ttlDays ? new Date(Date.now() + ttlDays * 86400000) : null;
-  return await MessageModel.create({
-    messageId: messageId ?? crypto.randomUUID(),
-    payload,
-    source: source ?? "unknown",
-    metadata: metadata ?? {},
-    expireAt,
-  });
-}
-
-export async function getRecentMessages(limit = 20) {
-  return await MessageModel.find().sort({ receivedAt: -1 }).limit(limit).lean();
-}
-```
-
-**src/index.ts**
-
-```ts
-import { connectMongo } from "./db";
-import { saveMessage, getRecentMessages } from "./db/repositories/messageRepo";
-
-async function main() {
-  await connectMongo();
-  await saveMessage({
-    payload: { hello: "world" },
-    source: "test",
-    metadata: { note: "premier insert" },
-    ttlDays: 30,
-  });
-  const recents = await getRecentMessages(5);
-  console.log("Messages récents:", recents);
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
-```
-
-## 🔐 Sécurité (bases)
-
-- Ne commitez pas .env.
-
-- Évitez d’utiliser root en prod ; créez un user applicatif dédié.
-
-- Utilisez un mot de passe fort (URL-encodez si nécessaire).
-
-- Pour la prod, privilégiez MongoDB Atlas (network rules + user par environnement).
+**Emma ALLAIN**

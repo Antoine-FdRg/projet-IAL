@@ -1,24 +1,40 @@
-const { connectMongo } = require("./db");
-const {
-  saveMessage,
-  getRecentMessages,
-} = require("./db/repositories/messageRepo");
+require("dotenv").config();
 
-async function main() {
-  await connectMongo();
+const express = require("express");
+const { connect } = require("./db");
+const ingestRoutes = require("./routes/ingest");
 
-  await saveMessage({
-    payload: { hello: "world" },
-    source: "test",
-    metadata: { note: "premier insert" },
-    ttlDays: 30,
-  });
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-  const recents = await getRecentMessages(5);
-  console.log("Messages récents:", recents);
-}
+// parsers
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: false }));
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// health check
+app.get(
+  "/health",
+  (req: any, res: { json: (arg0: { status: string; ts: number }) => void }) => {
+    res.json({ status: "ok", ts: Date.now() });
+  }
+);
+
+// routes
+app.use("/", ingestRoutes);
+
+// start
+(async () => {
+  try {
+    const uri = process.env.MONGODB_URI;
+    const dbName = process.env.DB_NAME || "telemetry";
+    if (!uri) throw new Error("Missing MONGODB_URI");
+    await connect(uri, dbName);
+
+    app.listen(PORT, () => {
+      console.log(`[http] Listening on http://localhost:${PORT}`);
+    });
+  } catch (e) {
+    console.error("Boot error:", e);
+    process.exit(1);
+  }
+})();
