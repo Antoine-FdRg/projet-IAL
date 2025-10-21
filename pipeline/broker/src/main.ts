@@ -58,8 +58,8 @@ async function main() {
       "MEASUREMENT.to_outlierfilter",
       "MEASUREMENT.to_normalize",
       "MEASUREMENT.to_analyze",
-      "MEASUREMENT.to_save",
-      "MEASUREMENT.to_split"
+      "MEASUREMENT.to_split",
+      "MEASUREMENT.to_save"
     ],
   });
 
