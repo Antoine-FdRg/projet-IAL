@@ -2,15 +2,9 @@ name: CI - Build Docker images
 
 on:
   push:
-    branches: [ main, develop ]
-    paths:
-      - '**/Dockerfile'
-      - 'build-all.sh'
-      - '**/build.sh'
-      - 'pipeline/**'
-      - 'box/**'
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   build:
