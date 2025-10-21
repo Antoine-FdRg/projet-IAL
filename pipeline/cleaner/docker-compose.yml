@@ -7,7 +7,7 @@ services:
       - setup-broker
     environment:
       - NATS_SERVER=${NATS_SERVER}
-      - NATS_CONSUME_QUEUE=MEASUREMENT.to_clean
+      - CLEANER_CONSUME_QUEUE=MEASUREMENT.to_clean
       - CLEANER_PRODUCER_QUEUE=${CLEANER_PRODUCER_QUEUE}
     networks:
       - nats-network

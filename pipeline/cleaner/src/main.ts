@@ -1,69 +1,15 @@
-import { connect, StringCodec, consumerOpts, nkeyAuthenticator, type ConnectionOptions } from "nats";
-import dotenv from "dotenv";
-dotenv.config();
-const getConnectionOptions: () => ConnectionOptions = () => {
+import { connect, consumerOpts, JSONCodec } from "nats";
+import type { MeasurementList } from "./type.js";
+import { CleanService } from "./cleanService.ts";
+import { BrokerService } from "./brokerService.ts";
+import { EnvService } from "./envService.ts";
 
-  if (!process.env.NATS_SERVER) {
-    throw new Error("Veuillez définir les variables d'environnement NATS_SERVER");
-  }
-
-  if (process.env.NATS_SERVER?.startsWith("http://")) {
-    return getDevConnectionOptions();
-  }
-  return getProdConnectionOptions();
-};
-
-function getProdConnectionOptions() {
-  if (!process.env.NATS_SEED) {
-    throw new Error("Veuillez définir la variable d'environnement NATS_SEED");
-  }
-  if (!process.env.NATS_CA_FILE) {
-    throw new Error("Veuillez définir la variable d'environnement NATS_CA_FILE");
-  }
-  console.log("🔌 Connexion au serveur NATS sécurisé avec les paramètres suivants :");
-  console.log(`   - NATS_SERVER: ${process.env.NATS_SERVER}`);
-  console.log(`   - NATS_SEED: ${process.env.NATS_SEED}`);
-  console.log(`   - NATS_CA_FILE: ${process.env.NATS_CA_FILE}`);
-  const seed = new TextEncoder().encode(process.env.NATS_SEED);
-  return {
-    servers: process.env.NATS_SERVER,
-    tls: {
-      caFile: process.env.NATS_CA_FILE,
-    },
-    authenticator: nkeyAuthenticator(seed)
-  } as ConnectionOptions;
-}
-
-function getDevConnectionOptions() {
-  console.log("🔌 Connexion au serveur NATS de dev avec les paramètres suivants :");
-  console.log(`   - NATS_SERVER: ${process.env.NATS_SERVER}`);
-  return {
-    servers: process.env.NATS_SERVER,
-  } as ConnectionOptions;
-}
-
-const getConsumeQueue = () => {
-  if (!process.env.NATS_CONSUME_QUEUE) {
-    throw new Error("Veuillez définir la variable d'environnement NATS_CONSUME_QUEUE");
-  }
-  console.log(`   - NATS_CONSUME_QUEUE: ${process.env.NATS_CONSUME_QUEUE}`);
-  return process.env.NATS_CONSUME_QUEUE;
-}
-
-const getProducerQueue = () => {
-  if (!process.env.CLEANER_PRODUCER_QUEUE) {
-    throw new Error("Veuillez définir la variable d'environnement CLEANER_PRODUCER_QUEUE");
-  }
-  console.log(`   - CLEANER_PRODUCER_QUEUE: ${process.env.CLEANER_PRODUCER_QUEUE}`);
-  return process.env.CLEANER_PRODUCER_QUEUE;
-}
 
 async function main() {
 
-  const nc = await connect(getConnectionOptions());
-  const consumeQueue = getConsumeQueue();
+  const nc = await connect(BrokerService.getConnectionOptions());
+  EnvService.verifyQueueEnvVars();
   const js = nc.jetstream();
-  const sc = StringCodec();
 
   const opts = consumerOpts();
   opts.durable("MEASUREMENT-consumer");
@@ -71,12 +17,21 @@ async function main() {
   opts.ackExplicit();
   opts.deliverTo("MEASUREMENT-workers");
 
-  const sub = await js.subscribe(consumeQueue, opts);
-  console.log("👂 En attente de messages...");
+  const consumeQueue = EnvService.getConsumeQueue();
+  const subscribe = await js.subscribe(consumeQueue, opts);
 
-  for await (const m of sub) {
-    console.log(`📥 Reçu : ${sc.decode(m.data)}`);
-    m.ack();
+  for await (const message of subscribe) {
+    const cleanList: MeasurementList | null = CleanService.cleanMeasurementList(message.data);
+    if (!cleanList) {
+      console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à un échec de nettoyage des données.`);
+      message.ack();
+      continue;
+    }
+    const producerQueue = EnvService.getProducerQueue();
+    const jsonCodec = JSONCodec();
+    await js.publish(producerQueue, jsonCodec.encode(cleanList));
+    console.log(`[${new Date().toISOString()}] - Traitement d'une liste de ${cleanList.dataList.length} mesures du boitier ${cleanList.boxId}`);
+    message.ack();
   }
 
   await nc.close();
