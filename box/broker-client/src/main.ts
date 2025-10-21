@@ -100,7 +100,7 @@ const createRandomMeasurementList = (): MeasurementList => {
   const measurementTypes = [
     { type: 'temperature', units: ['°C', '°F'], valueRange: { min: -10, max: 50 }, nonsenseRange: { min: -273, max: 1000 } },
     { type: 'weight', units: ['lbs', 'kg'], valueRange: { min: 0, max: 200 }, nonsenseRange: { min: -50, max: 5000 } },
-    { type: 'heart_rate', units: ['bps', 'bpm'], valueRange: { min: 60, max: 120 }, nonsenseRange: { min: 0, max: 1000 } }
+    { type: 'pulse', units: ['bps', 'bpm'], valueRange: { min: 60, max: 120 }, nonsenseRange: { min: 0, max: 1000 } }
   ];
 
   for (let i = 1; i <= 5; i++) {

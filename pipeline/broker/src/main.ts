@@ -55,8 +55,8 @@ async function main() {
   await jsm.streams.add({
     name: "MEASUREMENT",
     subjects: ["MEASUREMENT.to_clean",
-      "MEASUREMENT.to_outlierfilter",
       "MEASUREMENT.to_normalize",
+      "MEASUREMENT.to_outlierfilter",
       "MEASUREMENT.to_analyze",
       "MEASUREMENT.to_split",
       "MEASUREMENT.to_save"

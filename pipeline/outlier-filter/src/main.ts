@@ -1,6 +1,6 @@
 import {connect, consumerOpts, JSONCodec} from "nats";
 import type {MeasurementList} from "./type.js";
-import {NormalizerService} from "./normalizerService.ts";
+import {OutlierFilterService} from "./outlierFilterService.ts";
 import {BrokerService} from "./brokerService.ts";
 import {EnvService} from "./envService.ts";
 
@@ -17,7 +17,7 @@ async function main() {
     opts.deliverTo(`${consumeQueue.replace(".", "-")}-workers`);
     const subscribe = await js.subscribe(consumeQueue, opts);
     for await (const message of subscribe) {
-        const cleanList: MeasurementList | null = NormalizerService.normalizeMeasurementList(message.data);
+        const cleanList: MeasurementList | null = OutlierFilterService.filterAndNormalizeMeasurementList(message.data);
         if (!cleanList) {
             console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à un échec de nettoyage des données.`);
             message.ack();
@@ -25,7 +25,10 @@ async function main() {
         }
         const producerQueue = EnvService.getProducerQueue();
         const jsonCodec = JSONCodec();
-        await js.publish(producerQueue, jsonCodec.encode(cleanList));
+        console.log('cleanList | ', cleanList);
+        for (const queue of producerQueue) {
+            await js.publish(queue, jsonCodec.encode(cleanList));
+        }
         console.log(`[${new Date().toISOString()}] - Traitement d'une liste de ${cleanList.dataList.length} mesures du boitier ${cleanList.boxId}`);
         message.ack();
     }

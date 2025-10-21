@@ -1,0 +1,20 @@
+services:
+  outlier-filter:
+    image: ial/outlier-filter
+    container_name: outlier-filter-prod
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - OUTLIER_FILTER_CONSUME_QUEUE=MEASUREMENT.to_outlierfilter
+      - OUTLIER_FILTER_PRODUCER_QUEUE=${OUTLIER_FILTER_PRODUCER_QUEUE}
+      - NATS_CA_FILE=${NATS_CA_FILE}
+      - NATS_SEED=${NKEY_SEED_CLEANER}
+    volumes:
+      - ./configuration/certs:/app/configuration/certs:ro
+    networks:
+      - nats-network-prod
+networks:
+  nats-network-prod:
+    driver: bridge

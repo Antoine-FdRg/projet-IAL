@@ -25,13 +25,13 @@ Le message entrant a la structure suivante via la queue `MEASUREMENT.to_clean` :
 
 ```json
 {
-    "boxId": string,
+    "boxId": "string",
     "dataList": [
         {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
+            "type" : "string",
+            "value" : "number",
+            "unit" : "string",
+            "timestamp": "string"
         },
         ...
     ]
@@ -43,13 +43,13 @@ Le message sortant a la structure suivante via la queue `MEASUREMENT.to_normaliz
 
 ```json
 {
-    "boxId": string,
+    "boxId": "string",
     "dataList": [
         {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
+            "type" : "string",
+            "value" : "number",
+            "unit" : "string",
+            "timestamp": "string"
         },
         ...
     ]

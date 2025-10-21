@@ -1,0 +1,16 @@
+services:
+  outlier-filter:
+    image: ial/outlier-filter
+    container_name: outlier-filter
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - OUTLIER_FILTER_CONSUME_QUEUE=MEASUREMENT.to_outlierfilter
+      - OUTLIER_FILTER_PRODUCER_QUEUE=${OUTLIER_FILTER_PRODUCER_QUEUE}
+    networks:
+      - nats-network
+networks:
+  nats-network:
+    driver: bridge

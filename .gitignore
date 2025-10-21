@@ -220,3 +220,5 @@ $RECYCLE.BIN/
 ### Jetbrains ###
 .idea/
 *.iml
+
+.env.production
