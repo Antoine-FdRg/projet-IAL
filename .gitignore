@@ -216,3 +216,7 @@ $RECYCLE.BIN/
 *.pem
 *.key
 *.crt
+
+### Jetbrains ###
+.idea/
+*.iml
