@@ -1,23 +1,30 @@
 #!/bin/bash
+set -Eeuo pipefail
 
-function build_dir()  # $1 is the dir to get it
-{
-    depths=$(echo $1 | tr -cd '/' | wc -c)
-    cd $1
-    ./build.sh
-    for ((i=0; i<=depths; i++)); do
-        cd ..
-    done
-    echo "✔ Built $1"
+export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
+export BUILDKIT_PROGRESS=${BUILDKIT_PROGRESS:-plain}
+
+components=(
+    "pipeline/broker"
+    "box/broker-client"
+    "pipeline/cleaner"
+    "pipeline/normalizer"
+    "pipeline/outlier-filter"
+)
+
+build_dir() {
+    local dir="$1"
+    echo "🔨 Building $dir"
+    if [[ ! -x "$dir/build.sh" ]]; then
+        echo "❌ '$dir/build.sh' introuvable ou non exécutable"
+        exit 1
+    fi
+    # Exécuter dans un sous-shell pour ne pas salir le CWD et échouer si erreur
+    ( cd "$dir" && ./build.sh )
 }
 
-echo "🔨 Building all"
-
-build_dir "pipeline/broker"
-build_dir "box/broker-client"
-build_dir "pipeline/cleaner"
-build_dir "pipeline/outlier-filter"
-build_dir "pipeline/normalizer"
-
-echo "✅ Built all"
-
+echo "🔨 Building all docker images 🔨"
+for d in "${components[@]}"; do
+    build_dir "$d"
+done
+echo "✅ Built all docker images ✅"
