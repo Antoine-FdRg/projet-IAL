@@ -1,40 +1,18 @@
-name: CI - Build Docker images
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [push]
 jobs:
-  build:
+  Explore-GitHub-Actions:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    concurrency:
-      group: docker-build-${{ github.ref }}
-      cancel-in-progress: true
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Make scripts executable + normalize line endings
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v5
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: List files in the repository
         run: |
-          chmod +x build-all.sh || true
-          find . -maxdepth 4 -name build.sh -exec chmod +x {} \; || true
-          sed -i 's/\r$//' build-all.sh || true
-          find . -maxdepth 4 -name build.sh -exec sed -i 's/\r$//' {} \; || true
-
-      - name: Build all images
-        env:
-          DOCKER_BUILDKIT: 1
-          BUILDKIT_PROGRESS: plain
-        run: |
-          set -euo pipefail
-          ./build-all.sh
-
-      - name: List built images (debug)
-        run: docker images
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
