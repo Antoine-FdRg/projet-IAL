@@ -1,5 +1,6 @@
-import { connect, nkeyAuthenticator, StringCodec, type ConnectionOptions } from "nats";
+import { connect, JSONCodec, nkeyAuthenticator, type ConnectionOptions } from "nats";
 import dotenv from "dotenv";
+import type { MeasurementList, RawMeasurement } from "./type.js";
 dotenv.config();
 const getConnectionOptions: () => ConnectionOptions = () => {
 
@@ -80,18 +81,48 @@ async function main() {
 
   const nc = await connect(connectionOptions);
   const js = nc.jetstream();
-  const sc = StringCodec();
+  const codec = JSONCodec();
   console.log("Connecté au serveur NATS");
 
-  for (let i = 1; i <= 5; i++) {
-    const msg = `Mesure #${i}`;
-    await js.publish(publishQueue, sc.encode(msg));
-    console.log(`📤 Envoyé : ${msg}`);
-
-  }
+  const msg: MeasurementList | any = createRandomMeasurementList();
+  await js.publish(publishQueue, codec.encode(msg));
+  console.log(`📤 Envoyé : ${msg}`);
 
   await nc.close();
   console.log("✅ Publisher terminé");
 }
+
+
+const createRandomMeasurementList = (): MeasurementList | any => {
+  const boxId = `box-${Math.floor(Math.random() * 1000)}`;
+  const dataList: any[] = [];
+
+  for (let i = 1; i <= 5; i++) {
+    // Simuler occasionnellement des erreurs Bluetooth
+    if (Math.random() < 0.2) {
+      const errorMessages = [
+        "Bluetooth connection lost",
+        "Device timeout",
+        "Low signal strength",
+        "Authentication failed",
+        "Service discovery failed"
+      ];
+      const errorMeasurement = {
+        type: `error`,
+        error: errorMessages[Math.floor(Math.random() * errorMessages.length)]
+      };
+      dataList.push(errorMeasurement);
+    } else {
+      const measurement: RawMeasurement = {
+        type: `temperature`,
+        value: Math.random() * 100,
+        unit: `Celsius`,
+        timestamp: new Date().toISOString(),
+      };
+      dataList.push(measurement);
+    }
+  }
+  return { boxId, dataList };
+};
 
 main().catch(console.error);
