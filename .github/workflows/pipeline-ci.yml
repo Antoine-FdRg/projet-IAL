@@ -23,9 +23,9 @@ jobs:
 
       - name: Make scripts executable + normalize line endings
         run: |
-          chmod +x build-all.sh || true
+          chmod +x build-all.sh start-pipeline.sh stop-all.sh || true
           find . -maxdepth 4 -name build.sh -exec chmod +x {} \; || true
-          sed -i 's/\r$//' build-all.sh || true
+          sed -i 's/\r$//' build-all.sh start-pipeline.sh stop-all.sh || true
           find . -maxdepth 4 -name build.sh -exec sed -i 's/\r$//' {} \; || true
 
       - name: Build all images
@@ -36,5 +36,72 @@ jobs:
           set -euo pipefail
           ./build-all.sh
 
-      - name: List built images (debug)
-        run: docker images
+      - name: List built images
+        run: docker images | grep ial/
+
+      - name: Start development pipeline
+        run: |
+          set -euo pipefail
+          ./start-pipeline.sh
+
+      - name: Wait for containers to start
+        run: |
+          echo "⏳ Waiting 30 seconds for containers to initialize..."
+          sleep 30
+
+      - name: Check all containers are running
+        run: |
+          set -euo pipefail
+
+          EXPECTED_CONTAINERS=(
+            "nats-broker"
+            "setup-broker"
+            "box-broker-client"
+            "cleaner"
+            "normalizer"
+          )
+
+          echo "🔍 Checking container status..."
+          docker ps -a
+          echo ""
+
+          FAILED=0
+          for container in "${EXPECTED_CONTAINERS[@]}"; do
+            STATUS=$(docker inspect -f '{{.State.Status}}' "$container" 2>/dev/null || echo "not_found")
+            HEALTH=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}no_healthcheck{{end}}' "$container" 2>/dev/null || echo "not_found")
+            
+            echo "📦 Container: $container"
+            echo "   Status: $STATUS"
+            echo "   Health: $HEALTH"
+            
+            if [ "$STATUS" != "running" ]; then
+              echo "   ❌ Container is NOT running!"
+              FAILED=1
+            else
+              echo "   ✅ Container is running"
+            fi
+            echo ""
+          done
+
+          if [ $FAILED -eq 1 ]; then
+            echo "❌ Some containers failed to start properly"
+            exit 1
+          fi
+
+          echo "✅ All containers are running successfully"
+
+      - name: Show container logs (on failure)
+        if: failure()
+        run: |
+          echo "📋 Displaying container logs..."
+          echo ""
+          for container in nats-broker setup-broker box-broker-client cleaner normalizer; do
+            echo "=== Logs for $container ==="
+            docker logs "$container" 2>&1 || echo "⚠️ Could not retrieve logs for $container"
+            echo ""
+          done
+
+      - name: Stop all containers
+        if: always()
+        run: |
+          ./stop-all.sh || docker-compose -p ial-pipeline down || true
