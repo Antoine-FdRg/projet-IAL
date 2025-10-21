@@ -1,9 +1,9 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
     "allowImportingTsExtensions": true, //this works only with below noEmit set to true
     "noEmit": true,
+    // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
     // Environment Settings
