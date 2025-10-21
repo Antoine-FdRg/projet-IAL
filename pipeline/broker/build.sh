@@ -5,8 +5,8 @@ set -Eeuo pipefail
 export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
 export BUILDKIT_PROGRESS=${BUILDKIT_PROGRESS:-plain}
 
-trap 'echo "❌ Build échoué: ial/box-broker-client"; exit 1' ERR
+trap 'echo "❌ Build échoué: ial/setup-stream"; exit 1' ERR
 
-echo "Begin: Building docker image ial/box-broker-client"
-docker build -t "ial/box-broker-client" .
-echo "✅ Done: Building docker image ial/box-broker-client"
+echo "Begin: Building docker image ial/setup-stream"
+docker build -t "ial/setup-stream" .
+echo "✅ Done: Building docker image ial/setup-stream"

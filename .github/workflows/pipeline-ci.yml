@@ -7,7 +7,7 @@ on:
     branches: [main, dev]
 
 jobs:
-  build:
+  docker-build-all:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:

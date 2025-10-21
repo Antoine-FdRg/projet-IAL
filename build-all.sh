@@ -20,11 +20,10 @@ build_dir() {
     fi
     # Exécuter dans un sous-shell pour ne pas salir le CWD et échouer si erreur
     ( cd "$dir" && ./build.sh )
-    echo "✔ Built $dir"
 }
 
-echo "🔨 Building all"
+echo "🔨 Building all docker images 🔨"
 for d in "${components[@]}"; do
     build_dir "$d"
 done
-echo "✅ Built all"
+echo "✅ Built all docker images ✅"
