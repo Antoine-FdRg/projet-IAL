@@ -1,14 +1,8 @@
 name: CI - Build Docker images
-
+run-name: ${{ github.actor }} hope for pipeline to succeed
 on:
   push:
     branches: [main, dev]
-    paths:
-      - "**/Dockerfile"
-      - "build-all.sh"
-      - "**/build.sh"
-      - "pipeline/**"
-      - "box/**"
   pull_request:
     branches: [main, dev]
 
