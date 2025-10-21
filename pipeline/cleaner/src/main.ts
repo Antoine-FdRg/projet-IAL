@@ -11,13 +11,14 @@ async function main() {
   EnvService.verifyQueueEnvVars();
   const js = nc.jetstream();
 
+  const consumeQueue = EnvService.getConsumeQueue();
   const opts = consumerOpts();
-  opts.durable("MEASUREMENT-consumer");
+  opts.durable(`${consumeQueue.replace(".", "-")}-consumer`);
   opts.manualAck();
   opts.ackExplicit();
-  opts.deliverTo("MEASUREMENT-workers");
+  opts.deliverTo(`${consumeQueue.replace(".", "-")}-workers`);
 
-  const consumeQueue = EnvService.getConsumeQueue();
+
   const subscribe = await js.subscribe(consumeQueue, opts);
 
   for await (const message of subscribe) {

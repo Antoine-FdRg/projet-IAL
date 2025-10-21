@@ -16,6 +16,7 @@ echo "🔨 Building all"
 build_dir "pipeline/broker"
 build_dir "box/broker-client"
 build_dir "pipeline/cleaner"
+build_dir "pipeline/normalizer"
 
 echo "✅ Built all"
 

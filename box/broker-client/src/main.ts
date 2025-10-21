@@ -93,9 +93,15 @@ async function main() {
 }
 
 
-const createRandomMeasurementList = (): MeasurementList | any => {
+const createRandomMeasurementList = (): MeasurementList => {
   const boxId = `box-${Math.floor(Math.random() * 1000)}`;
-  const dataList: any[] = [];
+  const dataList: RawMeasurement[] = [];
+
+  const measurementTypes = [
+    { type: 'temperature', units: ['°C', '°F'], valueRange: { min: -10, max: 50 }, nonsenseRange: { min: -273, max: 1000 } },
+    { type: 'weight', units: ['lbs', 'kg'], valueRange: { min: 0, max: 200 }, nonsenseRange: { min: -50, max: 5000 } },
+    { type: 'heart_rate', units: ['bps', 'bpm'], valueRange: { min: 60, max: 120 }, nonsenseRange: { min: 0, max: 1000 } }
+  ];
 
   for (let i = 1; i <= 5; i++) {
     // Simuler occasionnellement des erreurs Bluetooth
@@ -110,19 +116,29 @@ const createRandomMeasurementList = (): MeasurementList | any => {
       const errorMeasurement = {
         type: `error`,
         error: errorMessages[Math.floor(Math.random() * errorMessages.length)]
-      };
+      } as any;
       dataList.push(errorMeasurement);
     } else {
+      const measurementConfig = measurementTypes[Math.floor(Math.random() * measurementTypes.length)]!;
+      const unit = measurementConfig.units[Math.floor(Math.random() * measurementConfig.units.length)]!;
+
+      // 15% chance of generating nonsensical values
+      const isNonsenseValue = Math.random() < 0.15;
+      const range = isNonsenseValue ? measurementConfig.nonsenseRange : measurementConfig.valueRange;
+      const { min, max } = range;
+
       const measurement: RawMeasurement = {
-        type: `temperature`,
-        value: Math.random() * 100,
-        unit: `Celsius`,
+        type: measurementConfig.type,
+        value: Math.round((Math.random() * (max - min) + min) * 100) / 100,
+        unit: unit,
         timestamp: new Date().toISOString(),
       };
       dataList.push(measurement);
     }
   }
+
   return { boxId, dataList };
 };
+
 
 main().catch(console.error);
