@@ -11,10 +11,10 @@ export class BrokerService {
   }
 
   static getProdConnectionOptions = () => {
-    console.log("🔌 Connexion au serveur NATS sécurisé avec les paramètres suivants :");
-    console.log(`   - NATS_SERVER: ${EnvService.getBrokerURL()}`);
-    console.log(`   - NATS_SEED: ${EnvService.getNatsSeed()}`);
-    console.log(`   - NATS_CA_FILE: ${EnvService.getNatsCAFile()}`);
+    console.log(`[${new Date().toISOString()}] -🔌 Connexion au serveur NATS sécurisé avec les paramètres suivants :`);
+    console.log(`[${new Date().toISOString()}]    - NATS_SERVER: ${EnvService.getBrokerURL()}`);
+    console.log(`[${new Date().toISOString()}]    - NATS_SEED: ${EnvService.getNatsSeed()}`);
+    console.log(`[${new Date().toISOString()}]    - NATS_CA_FILE: ${EnvService.getNatsCAFile()}`);
     const seed = new TextEncoder().encode(EnvService.getNatsSeed());
     return {
       servers: EnvService.getBrokerURL(),
@@ -26,8 +26,8 @@ export class BrokerService {
   }
 
   static getDevConnectionOptions = () => {
-    console.log("🔌 Connexion au serveur NATS de dev avec les paramètres suivants :");
-    console.log(`   - NATS_SERVER: ${EnvService.getBrokerURL()}`);
+    console.log(`[${new Date().toISOString()}] -🔌 Connexion au serveur NATS de dev avec les paramètres suivants :`);
+    console.log(`[${new Date().toISOString()}]    - NATS_SERVER: ${EnvService.getBrokerURL()}`);
     return {
       servers: EnvService.getBrokerURL(),
     } as ConnectionOptions;

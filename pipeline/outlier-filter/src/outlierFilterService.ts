@@ -15,10 +15,8 @@ export class OutlierFilterService {
             const jsonString = new TextDecoder().decode(data);
             const rawData = JSON.parse(jsonString) as MeasurementList;
 
-            console.log('Raw data received for outlier filtering:', rawData);
-
             if (!rawData.boxId || !Array.isArray(rawData.dataList)) {
-                console.error("Invalid data structure: missing boxId or dataList");
+                console.error(`[${new Date().toISOString()}] - Invalid data structure: missing boxId or dataList`);
                 return null;
             }
 
@@ -29,7 +27,7 @@ export class OutlierFilterService {
                 });
 
             if (filteredDataList.length === 0) {
-                console.error("No valid measurements after outlier filtering");
+                console.error(`[${new Date().toISOString()}] - No valid measurements after outlier filtering`);
                 return null;
             }
 
@@ -38,7 +36,7 @@ export class OutlierFilterService {
                 dataList: filteredDataList
             };
         } catch (error) {
-            console.error("Error parsing measurement data:", error);
+            console.error(`[${new Date().toISOString()}] - Error parsing measurement data:`, error);
             return null;
         }
     }
@@ -61,7 +59,6 @@ export class OutlierFilterService {
         const max = EnvService.getWeightMax();
 
         if (value < min || value > max) {
-            console.warn(`Weight outlier filtered: ${value}`);
             return false;
         }
         return true;
@@ -69,9 +66,11 @@ export class OutlierFilterService {
 
     private static isValidTemperature(value: number): boolean {
         const max = EnvService.getTemperatureMax();
+        const min = EnvService.getTemperatureMin();
 
         if (value > max) {
-            console.warn(`Temperature outlier filtered: ${value}`);
+            return false;
+        } else if (value < min) {
             return false;
         }
         return true;
@@ -81,7 +80,6 @@ export class OutlierFilterService {
         const max = EnvService.getPulseMax();
 
         if (value < 0 || value > max) {
-            console.warn(`Pulse outlier filtered: ${value}`);
             return false;
         }
         return true;

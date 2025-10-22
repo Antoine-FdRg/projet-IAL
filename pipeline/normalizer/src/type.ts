@@ -2,7 +2,7 @@
  * Une mesure non annotée avec l'id bu boitier
  */
 export type RawMeasurement = {
-    type: string;
+    type: 'temperature' | 'pulse' | 'weight' | 'steps';
     value: number;
     unit: string;
     timestamp: string;

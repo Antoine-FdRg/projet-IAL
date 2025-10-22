@@ -25,7 +25,6 @@ async function main() {
         }
         const producerQueue = EnvService.getProducerQueue();
         const jsonCodec = JSONCodec();
-        console.log('filteredList | ', filteredList);
         for (const queue of producerQueue) {
             await js.publish(queue, jsonCodec.encode(filteredList));
         }

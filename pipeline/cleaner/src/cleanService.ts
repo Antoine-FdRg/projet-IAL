@@ -36,7 +36,7 @@ const cleanSingleMeasurement = (measurement: any, index: number): RawMeasurement
       return null;
     }
 
-    return { type, value, unit, timestamp };
+    return { type, value, unit, timestamp } as RawMeasurement;
   } catch (error) {
     console.error(`❌ Erreur lors du nettoyage de la mesure ${index}:`, error);
     return null;

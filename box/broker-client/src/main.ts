@@ -95,7 +95,7 @@ async function main() {
 
 const createRandomMeasurementList = (): MeasurementList => {
   const boxId = `box-${Math.floor(Math.random() * 1000)}`;
-  const dataList: RawMeasurement[] = [];
+  const dataList = [];
 
   const measurementTypes = [
     { type: 'temperature', units: ['°C', '°F'], valueRange: { min: -10, max: 50 }, nonsenseRange: { min: -273, max: 1000 } },
@@ -127,7 +127,7 @@ const createRandomMeasurementList = (): MeasurementList => {
       const range = isNonsenseValue ? measurementConfig.nonsenseRange : measurementConfig.valueRange;
       const { min, max } = range;
 
-      const measurement: RawMeasurement = {
+      const measurement = {
         type: measurementConfig.type,
         value: Math.round((Math.random() * (max - min) + min) * 100) / 100,
         unit: unit,

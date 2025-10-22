@@ -14,7 +14,7 @@ const normalizeMeasurementList = (data: Uint8Array<ArrayBufferLike>): Measuremen
         const jsonString = new TextDecoder().decode(data);
         const rawData = JSON.parse(jsonString) as MeasurementList;
         if (!rawData.boxId || !Array.isArray(rawData.dataList)) {
-            console.error("Invalid data structure: missing boxId or dataList");
+            console.error(`[${new Date().toISOString()}] - Invalid data structure: missing boxId or dataList`);
             return null;
         }
 
@@ -24,7 +24,7 @@ const normalizeMeasurementList = (data: Uint8Array<ArrayBufferLike>): Measuremen
             .filter(measurement => measurement !== null) as RawMeasurement[];
 
         if (normalizedDataList.length === 0) {
-            console.error("No valid measurements after normalization");
+            console.error(`[${new Date().toISOString()}] - No valid measurements after normalization`);
             return null;
         }
 
@@ -33,7 +33,7 @@ const normalizeMeasurementList = (data: Uint8Array<ArrayBufferLike>): Measuremen
             dataList: normalizedDataList
         };
     } catch (error) {
-        console.error("Error parsing measurement data:", error);
+        console.error(`[${new Date().toISOString()}] - Error parsing measurement data:`, error);
         return null;
     }
 };
@@ -42,14 +42,14 @@ const normalizeMeasurement = (measurement: RawMeasurement): RawMeasurement | nul
     try {
         // Validate required fields
         if (!measurement.type || !measurement.unit || !measurement.timestamp) {
-            console.error("Invalid measurement: missing required fields");
+            console.error(`[${new Date().toISOString()}] - Invalid measurement: missing required fields`);
             return null;
         }
 
         // Validate timestamp format
         const timestamp = new Date(measurement.timestamp);
         if (isNaN(timestamp.getTime())) {
-            console.error("Invalid timestamp format");
+            console.error(`[${new Date().toISOString()}] - Invalid timestamp format`);
             return null;
         }
 
@@ -85,7 +85,7 @@ const normalizeMeasurement = (measurement: RawMeasurement): RawMeasurement | nul
             timestamp: timestamp.toISOString()
         };
     } catch (error) {
-        console.error("Error normalizing measurement:", error);
+        console.error(`[${new Date().toISOString()}] - Error normalizing measurement:`, error);
         return null;
     }
 };
