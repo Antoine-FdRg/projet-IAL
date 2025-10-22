@@ -5,7 +5,6 @@ L'Outlier Filter est le troisième composant de la pipeline d'ingestion de donn�
 Le fichier `.env` permet de configurer les variables d'environnement suivantes :
 - `NATS_SERVER` : L'URL du serveur NATS distant.
 - `OUTLIER_FILTER_CONSUMER_QUEUE` : La queue NATS où les données à filtrer sont consommées.
-- `OUTLIER_FILTER_PRODUCER_QUEUE` : Les queues NATS où les données filtrées sont publiées.
 
 ### Production
 Pour le lancement en mode production, les variables d'environnement suivantes doivent être définies :

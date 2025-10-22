@@ -29,7 +29,6 @@ describe('Outlier Filter E2E Tests', () => {
         // Mock environment service
         EnvService.getBrokerURL.mockReturnValue('http://localhost:4222');
         EnvService.getConsumeQueue.mockReturnValue('MEASUREMENT.to_outlierfilter');
-        EnvService.getProducerQueue.mockReturnValue(['MEASUREMENT.to_split', 'MEASUREMENT.to_analyze']);
         EnvService.getWeightMin.mockReturnValue(15);
         EnvService.getWeightMax.mockReturnValue(500);
         EnvService.getTemperatureMin.mockReturnValue(32);

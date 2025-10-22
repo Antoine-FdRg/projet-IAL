@@ -5,13 +5,10 @@ dotenv.config();
 export class EnvService {
 
     static verifyQueueEnvVars = () => {
-        if (!process.env.OUTLIER_FILTER_PRODUCER_QUEUE) {
-            throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement OUTLIER_FILTER_PRODUCER_QUEUE`);
-        }
         if (!process.env.OUTLIER_FILTER_CONSUME_QUEUE) {
             throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement OUTLIER_FILTER_CONSUME_QUEUE`);
         }
-        console.log(`[${new Date().toISOString()}] - ⚙️  Les messages seront lu depuis ${this.getConsumeQueue()} et publiés dans ${this.getProducerQueue()}`);
+        console.log(`[${new Date().toISOString()}] - ⚙️  Les messages seront lu depuis ${this.getConsumeQueue()}`);
     }
 
     static getBrokerURL(): string {
@@ -40,13 +37,6 @@ export class EnvService {
             throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement OUTLIER_FILTER_CONSUME_QUEUE`);
         }
         return process.env.OUTLIER_FILTER_CONSUME_QUEUE;
-    }
-
-    static getProducerQueue(): string[] {
-        if (!process.env.OUTLIER_FILTER_PRODUCER_QUEUE) {
-            throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement OUTLIER_FILTER_PRODUCER_QUEUE`);
-        }
-        return process.env.OUTLIER_FILTER_PRODUCER_QUEUE.split(",");
     }
 
     static getPulseMax(): number {

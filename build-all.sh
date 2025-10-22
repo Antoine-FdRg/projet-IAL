@@ -5,12 +5,11 @@ export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
 export BUILDKIT_PROGRESS=${BUILDKIT_PROGRESS:-plain}
 
 components=(
-    "pipeline/broker"
+    "box/broker"
     "box/broker-client"
-    "pipeline/cleaner"
-    "pipeline/normalizer"
-    "pipeline/splitter"
-    "pipeline/outlier-filter"
+    "box/cleaner"
+    "box/normalizer"
+    "box/outlier-filter"
 )
 
 build_dir() {

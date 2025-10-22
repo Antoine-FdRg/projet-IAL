@@ -23,11 +23,7 @@ async function main() {
             message.ack();
             continue;
         }
-        const producerQueue = EnvService.getProducerQueue();
-        const jsonCodec = JSONCodec();
-        for (const queue of producerQueue) {
-            await js.publish(queue, jsonCodec.encode(filteredList));
-        }
+        // save to db
         console.log(`[${new Date().toISOString()}] - Traitement d'une liste de ${filteredList.dataList.length} mesures du boitier ${filteredList.boxId}`);
         message.ack();
     }

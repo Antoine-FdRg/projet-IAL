@@ -7,7 +7,6 @@ describe('EnvService', () => {
             NATS_SERVER: 'nats://localhost:4222',
             NATS_SEED: 'seed123',
             NATS_CA_FILE: '/path/to/ca',
-            OUTLIER_FILTER_PRODUCER_QUEUE: 'queue1,queue2',
             OUTLIER_FILTER_CONSUME_QUEUE: 'queue.consume',
             POULS_MAX: '200',
             TEMPERATURE_MIN: '10',
@@ -19,10 +18,6 @@ describe('EnvService', () => {
 
     test('should return broker URL', () => {
         expect(EnvService.getBrokerURL()).toBe('nats://localhost:4222');
-    });
-
-    test('should return producer queue as array', () => {
-        expect(EnvService.getProducerQueue()).toEqual(['queue1', 'queue2']);
     });
 
     test('should throw error if missing NATS_SERVER', () => {
@@ -72,11 +67,6 @@ describe('EnvService', () => {
         expect(() => EnvService.getNatsCAFile()).toThrow();
     });
 
-    test('should throw error if missing OUTLIER_FILTER_PRODUCER_QUEUE', () => {
-        delete process.env.OUTLIER_FILTER_PRODUCER_QUEUE;
-        expect(() => EnvService.getProducerQueue()).toThrow();
-    });
-
     test('should throw error if missing OUTLIER_FILTER_CONSUME_QUEUE', () => {
         delete process.env.OUTLIER_FILTER_CONSUME_QUEUE;
         expect(() => EnvService.getConsumeQueue()).toThrow();
@@ -109,11 +99,6 @@ describe('EnvService', () => {
 
     test('should verify queue environment variables without throwing', () => {
         expect(() => EnvService.verifyQueueEnvVars()).not.toThrow();
-    });
-
-    test('should throw error when verifying queue env vars if missing OUTLIER_FILTER_PRODUCER_QUEUE', () => {
-        delete process.env.OUTLIER_FILTER_PRODUCER_QUEUE;
-        expect(() => EnvService.verifyQueueEnvVars()).toThrow();
     });
 
     test('should throw error when verifying queue env vars if missing OUTLIER_FILTER_CONSUME_QUEUE', () => {
