@@ -7,6 +7,7 @@ docker-compose -p ial-pipeline \
   -f pipeline/cleaner/docker-compose.yml \
   -f pipeline/outlier-filter/docker-compose.yml \
   -f pipeline/normalizer/docker-compose.yml \
+  -f pipeline/splitter/docker-compose.yml \
   up -d
 
 echo "✅ Pipeline started successfully"

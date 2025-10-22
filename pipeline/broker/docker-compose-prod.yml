@@ -12,8 +12,8 @@ services:
       - nats-network-prod
 
   setup-broker:
-    image: ial/broker-setup-broker
-    container_name: setup-broker-prod
+    image: ial/setup-stream
+    container_name: setup-stream-prod
     command: ["node", "dist/main.js"]
     depends_on:
       - nats

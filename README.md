@@ -139,3 +139,11 @@ Queue : MEASUREMENT.to_save
     "toTimestamp": string,
 }
 ```
+
+## SonarQube
+Le projet utilise sonarqube (sonarcloud) pour l'analyse de la qualité du code dans le CI/CD.
+Les fichiers de configuration `sonar-project.properties` de chaque projet permettent de définir les paramètres d'analyse.
+Pour créer le projet sur sonarcloud, il faut lancer la commande suivante dans le répertoire racine du projet concerné dans un git bash ou wsl :
+```bash
+export SONAR_TOKEN="token_a_prendre_sur_la_conversation_discord" && npx sonar-scan
+```

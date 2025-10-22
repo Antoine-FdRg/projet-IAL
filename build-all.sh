@@ -9,6 +9,7 @@ components=(
     "box/broker-client"
     "pipeline/cleaner"
     "pipeline/normalizer"
+    "pipeline/splitter"
     "pipeline/outlier-filter"
 )
 
