@@ -1,6 +1,7 @@
-import type {RawMeasurement, MeasurementList} from "./type.js";
+import type {RawMeasurement, MeasurementList} from "./type";
+// @ts-ignore
 import dotenv from "dotenv";
-import {EnvService} from "./envService.js";
+import {EnvService} from "./envService";
 
 dotenv.config();
 

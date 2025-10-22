@@ -38,6 +38,8 @@
     "skipLibCheck": true,
     // Custom conf from ChatGPT and IDE suggestions
     "esModuleInterop": true,
-    "moduleResolution": "NodeNext"
-  }
+    "moduleResolution": "node"
+  },
+  "include": ["/**/*.ts"],
+  "exclude": ["node_modules"]
 }

@@ -1,4 +1,5 @@
 import type {RawMeasurement, MeasurementList} from "./type.js";
+// @ts-ignore
 import dotenv from "dotenv";
 
 dotenv.config();

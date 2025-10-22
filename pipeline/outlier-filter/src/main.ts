@@ -1,8 +1,8 @@
 import {connect, consumerOpts, JSONCodec} from "nats";
-import type {MeasurementList} from "./type.js";
-import {OutlierFilterService} from "./outlierFilterService.ts";
-import {BrokerService} from "./brokerService.ts";
-import {EnvService} from "./envService.ts";
+import type {MeasurementList} from "./type";
+import {OutlierFilterService} from "./outlierFilterService";
+import {BrokerService} from "./brokerService";
+import {EnvService} from "./envService";
 
 
 async function main() {
