@@ -17,19 +17,19 @@ async function main() {
     opts.deliverTo(`${consumeQueue.replace(".", "-")}-workers`);
     const subscribe = await js.subscribe(consumeQueue, opts);
     for await (const message of subscribe) {
-        const cleanList: MeasurementList | null = OutlierFilterService.filterAndNormalizeMeasurementList(message.data);
-        if (!cleanList) {
+        const filteredList: MeasurementList | null = OutlierFilterService.filterAndNormalizeMeasurementList(message.data);
+        if (!filteredList) {
             console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à un échec de nettoyage des données.`);
             message.ack();
             continue;
         }
         const producerQueue = EnvService.getProducerQueue();
         const jsonCodec = JSONCodec();
-        console.log('cleanList | ', cleanList);
+        console.log('filteredList | ', filteredList);
         for (const queue of producerQueue) {
-            await js.publish(queue, jsonCodec.encode(cleanList));
+            await js.publish(queue, jsonCodec.encode(filteredList));
         }
-        console.log(`[${new Date().toISOString()}] - Traitement d'une liste de ${cleanList.dataList.length} mesures du boitier ${cleanList.boxId}`);
+        console.log(`[${new Date().toISOString()}] - Traitement d'une liste de ${filteredList.dataList.length} mesures du boitier ${filteredList.boxId}`);
         message.ack();
     }
 

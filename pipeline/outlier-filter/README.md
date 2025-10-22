@@ -60,7 +60,7 @@ Le message sortant a la structure suivante via les queues `MEASUREMENT.to_split,
 ### Filtrage des valeurs aberrantes
 L'Outlier Filter effectue les filtrages suivants selon le type de mesure :
 - **Poids** (`weight`) : Rejette les valeurs < 15 kg ou > 500 kg
-- **Température** (`temperature`) : Rejette les valeurs > 60°C
+- **Température** (`temperature`) : Rejette les valeurs < 32°C ou > 42°C
 - **Fréquence cardiaque** (`pulse`) : Rejette les valeurs > 250 bpm
 
 Les mesures qui ne respectent pas ces critères sont filtrées et un avertissement est généré dans les logs.

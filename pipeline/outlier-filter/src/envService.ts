@@ -48,4 +48,32 @@ export class EnvService {
         }
         return process.env.OUTLIER_FILTER_PRODUCER_QUEUE.split(",");
     }
+
+    static getPulseMax(): number {
+        if (!process.env.POULS_MAX) {
+            throw new Error("Veuillez définir la variable d'environnement POULS_MAX");
+        }
+        return Number(process.env.POULS_MAX);
+    }
+
+    static getTemperatureMax(): number {
+        if (!process.env.TEMPERATURE_MAX) {
+            throw new Error("Veuillez définir la variable d'environnement TEMPERATURE_MAX");
+        }
+        return Number(process.env.TEMPERATURE_MAX);
+    }
+
+    static getWeightMin(): number {
+        if (!process.env.POIDS_MIN) {
+            throw new Error("Veuillez définir la variable d'environnement POIDS_MIN");
+        }
+        return Number(process.env.POIDS_MIN);
+    }
+
+    static getWeightMax(): number {
+        if (!process.env.POIDS_MAX) {
+            throw new Error("Veuillez définir la variable d'environnement POIDS_MAX");
+        }
+        return Number(process.env.POIDS_MAX);
+    }
 }
