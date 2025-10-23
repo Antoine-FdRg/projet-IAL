@@ -49,7 +49,7 @@ jobs:
           - box/broker-client
           - box/cleaner
           - box/normalizer
-          - box/splitter
+          - box/outlier-filter
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
