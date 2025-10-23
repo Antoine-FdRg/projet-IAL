@@ -10,7 +10,7 @@ services:
       - NORMALIZER_CONSUME_QUEUE=MEASUREMENT.to_normalize
       - NORMALIZER_PRODUCER_QUEUE=${NORMALIZER_PRODUCER_QUEUE}
       - NATS_CA_FILE=${NATS_CA_FILE}
-      - NATS_SEED=${NKEY_SEED_CLEANER}
+      - NATS_SEED=${NKEY_SEED_NORMALIZER}
     volumes:
       - ./configuration/certs:/app/configuration/certs:ro
     networks:
