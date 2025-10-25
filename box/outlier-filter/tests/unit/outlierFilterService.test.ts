@@ -12,6 +12,8 @@ describe('OutlierFilterService', () => {
         (EnvService.getTemperatureMin as jest.Mock).mockReturnValue(32);
         (EnvService.getTemperatureMax as jest.Mock).mockReturnValue(42);
         (EnvService.getPulseMax as jest.Mock).mockReturnValue(250);
+        (EnvService.getPulseMin as jest.Mock).mockReturnValue(0);
+        (EnvService.getStepsMin as jest.Mock).mockReturnValue(0);
     });
 
     describe('filterAndNormalizeMeasurementList', () => {
