@@ -45,11 +45,11 @@ jobs:
     strategy:
       matrix:
         component:
-          - pipeline/broker
+          - box/broker
           - box/broker-client
-          - pipeline/cleaner
-          - pipeline/normalizer
-          - pipeline/splitter
+          - box/cleaner
+          - box/normalizer
+          - box/outlier-filter
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

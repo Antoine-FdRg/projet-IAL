@@ -1,0 +1,22 @@
+services:
+  outlier-filter:
+    image: ial/outlier-filter
+    container_name: outlier-filter
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - OUTLIER_FILTER_CONSUME_QUEUE=MEASUREMENT.to_outlierfilter
+      - POULS_MAX=${OUTLIER_FILTER_POULS_MAX}
+      - POULS_MIN=${OUTLIER_FILTER_POULS_MIN}
+      - TEMPERATURE_MIN=${OUTLIER_FILTER_TEMPERATURE_MIN}
+      - TEMPERATURE_MAX=${OUTLIER_FILTER_TEMPERATURE_MIN}
+      - POIDS_MIN=${OUTLIER_FILTER_POIDS_MIN}
+      - POIDS_MAX=${OUTLIER_FILTER_POIDS_MAX}
+      - STEPS_MIN=${OUTLIER_FILTER_STEPS_MIN}
+    networks:
+      - nats-network
+networks:
+  nats-network:
+    driver: bridge

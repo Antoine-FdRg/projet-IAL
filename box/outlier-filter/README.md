@@ -1,0 +1,58 @@
+# Outlier Filter
+L'Outlier Filter est le troisième composant de la pipeline d'ingestion de données. Il écoute les messages sur la queue NATS `MEASUREMENT.to_outlierfilter` et filtre les valeurs aberrantes avant de les envoyer vers les queues `MEASUREMENT.to_split,MEASUREMENT.to_analyze`.
+
+## Configuration
+Le fichier `.env` permet de configurer les variables d'environnement suivantes :
+- `NATS_SERVER` : L'URL du serveur NATS distant.
+- `OUTLIER_FILTER_CONSUMER_QUEUE` : La queue NATS où les données à filtrer sont consommées.
+
+
+Le dossier `configuration/cert` doit inclure le certificat CA pour la connexion TLS au serveur NATS distant.
+
+## Démarrage
+`start-pipeline.sh` démarre automatiquement l'Outlier Filter avec les autres composants de la pipeline.
+
+## Utilisation
+### Schéma donnée entrant
+Le message entrant a la structure suivante via la queue `MEASUREMENT.to_outlierfilter` :
+
+```json
+{
+    "boxId": "string",
+    "dataList": [
+        {
+            "type" : "string",
+            "value" : "number",
+            "unit" : "string",
+            "timestamp": "string"
+        },
+        ...
+    ]
+}
+```
+
+### Schéma donnée sortant
+Le message sortant a la structure suivante via les queues `MEASUREMENT.to_split,MEASUREMENT.to_analyze` :
+
+```json
+{
+    "boxId": "string",
+    "dataList": [
+        {
+            "type" : "string",
+            "value" : "number",
+            "unit" : "string",
+            "timestamp": "string"
+        },
+        ...
+    ]
+}
+```
+
+### Filtrage des valeurs aberrantes
+L'Outlier Filter effectue les filtrages suivants selon le type de mesure :
+- **Poids** (`weight`) : Rejette les valeurs < 15 kg ou > 500 kg
+- **Température** (`temperature`) : Rejette les valeurs < 32°C ou > 42°C
+- **Fréquence cardiaque** (`pulse`) : Rejette les valeurs > 250 bpm
+
+Les mesures qui ne respectent pas ces critères sont filtrées et un avertissement est généré dans les logs.
