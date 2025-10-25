@@ -46,6 +46,13 @@ export class EnvService {
         return Number(process.env.POULS_MAX);
     }
 
+    static getPulseMin(): number {
+        if (!process.env.POULS_MIN) {
+            throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement POULS_MIN`);
+        }
+        return Number(process.env.POULS_MIN);
+    }
+
     static getTemperatureMax(): number {
         if (!process.env.TEMPERATURE_MAX) {
             throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement TEMPERATURE_MAX`);
@@ -72,5 +79,12 @@ export class EnvService {
             throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement POIDS_MAX`);
         }
         return Number(process.env.POIDS_MAX);
+    }
+
+    static getStepsMin() {
+        if (!process.env.STEPS_MIN) {
+            throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement STEPS_MIN`);
+        }
+        return Number(process.env.STEPS_MIN);
     }
 }

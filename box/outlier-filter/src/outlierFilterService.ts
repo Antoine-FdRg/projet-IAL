@@ -50,6 +50,8 @@ export class OutlierFilterService {
                 return this.isValidTemperature(measurement.value);
             case 'pulse':
                 return this.isValidPulse(measurement.value);
+            case 'steps':
+                return this.isValidSteps(measurement.value);
             default:
                 return true;
         }
@@ -59,30 +61,26 @@ export class OutlierFilterService {
         const min = EnvService.getWeightMin();
         const max = EnvService.getWeightMax();
 
-        if (value < min || value > max) {
-            return false;
-        }
-        return true;
+        return !(value < min || value > max);
     }
 
     private static isValidTemperature(value: number): boolean {
         const max = EnvService.getTemperatureMax();
         const min = EnvService.getTemperatureMin();
 
-        if (value > max) {
-            return false;
-        } else if (value < min) {
-            return false;
-        }
-        return true;
+        return !(value > max || value < min);
     }
 
     private static isValidPulse(value: number): boolean {
         const max = EnvService.getPulseMax();
+        const min = EnvService.getPulseMin();
 
-        if (value < 0 || value > max) {
-            return false;
-        }
-        return true;
+        return !(value < min || value > max);
+    }
+
+    private static isValidSteps(value: number): boolean {
+        const min = EnvService.getStepsMin();
+
+        return value >= min;
     }
 }
