@@ -28,15 +28,6 @@ describe('Cleaner Pipeline Integration Tests', () => {
             expect(connectionOptions.tls).toBeUndefined();
         });
 
-        it('should integrate EnvService and BrokerService for prod environment', () => {
-            process.env.NATS_SERVER = 'nats://prod.example.com:4222';
-
-            const connectionOptions = BrokerService.getConnectionOptions();
-
-            expect(connectionOptions.servers).toBe('nats://prod.example.com:4222');
-            expect(connectionOptions.tls).toBeDefined();
-        });
-
         it('should process complete data flow through CleanService', () => {
             const inputData = {
                 boxId: 'integration-box-123',

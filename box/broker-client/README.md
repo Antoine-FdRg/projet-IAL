@@ -9,20 +9,12 @@ Le fichier `.env` permet de configurer les variables d'environnement suivantes :
 
 Le dossier configuration inclut le fichier `scheduler.sh` permet de lancer régulièrement le push des données et le dossier configuration/cert le certificat CA pour la connexion TLS au serveur NATS distant. 
 
-### Production
-Pour la production, les variables d'environnement suivantes doivent être définies :
-- `NATS_NKEY_SEED` : La seed NKey pour l'authentification au serveur NATS.
-- `NATS_CA_FILE` : Le chemin vers le fichier de certificat CA pour la connexion TLS.
 
 Le dossier `configuration/cert` doit inclure le certificat CA pour la connexion TLS au serveur NATS distant.
 
 ## Démarrage
 
-### Dev
 `start-pipeline.sh` démarre automatiquement le broker-client du boitier avec les autres composants de la pipeline.
-
-### Production
-`start-pipeline-prod.sh` démarre automatiquement le broker-client du boitier avec les autres composants de la pipeline de manière sécurisée avec TLS et authentification via NKey.
 
 ## Utilisation
 

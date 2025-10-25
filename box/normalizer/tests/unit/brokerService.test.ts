@@ -20,22 +20,6 @@ describe('BrokerService Unit Tests', () => {
                 servers: 'http://localhost:4222'
             });
         });
-
-        it('should return prod connection options for non-http URLs', () => {
-            mockEnvService.getBrokerURL.mockReturnValue('nats://prod-server:4222');
-            mockEnvService.getNatsSeed.mockReturnValue('test-seed');
-            mockEnvService.getNatsCAFile.mockReturnValue('/path/to/ca.crt');
-
-            const result = BrokerService.getConnectionOptions();
-
-            expect(result).toEqual({
-                servers: 'nats://prod-server:4222',
-                tls: {
-                    caFile: '/path/to/ca.crt'
-                },
-                authenticator: expect.any(Function)
-            });
-        });
     });
 
     describe('getDevConnectionOptions', () => {
@@ -46,24 +30,6 @@ describe('BrokerService Unit Tests', () => {
 
             expect(result).toEqual({
                 servers: 'http://localhost:4222'
-            });
-        });
-    });
-
-    describe('getProdConnectionOptions', () => {
-        it('should return secure connection options', () => {
-            mockEnvService.getBrokerURL.mockReturnValue('nats://prod-server:4222');
-            mockEnvService.getNatsSeed.mockReturnValue('test-seed');
-            mockEnvService.getNatsCAFile.mockReturnValue('/path/to/ca.crt');
-
-            const result = BrokerService.getProdConnectionOptions();
-
-            expect(result).toEqual({
-                servers: 'nats://prod-server:4222',
-                tls: {
-                    caFile: '/path/to/ca.crt'
-                },
-                authenticator: expect.any(Function)
             });
         });
     });

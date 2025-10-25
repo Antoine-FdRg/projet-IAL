@@ -18,17 +18,5 @@ describe('BrokerService Integration', () => {
                 servers: 'http://localhost:4222'
             });
         });
-
-        it('should return prod options for non-http URLs', () => {
-            (EnvService.getBrokerURL as jest.Mock).mockReturnValue('nats://prod-server:4222');
-            (EnvService.getNatsSeed as jest.Mock).mockReturnValue('SUABC123...');
-            (EnvService.getNatsCAFile as jest.Mock).mockReturnValue('/path/to/ca.crt');
-
-            const options = BrokerService.getConnectionOptions();
-
-            expect(options.servers).toBe('nats://prod-server:4222');
-            expect(options.tls).toBeDefined();
-            expect(options.authenticator).toBeDefined();
-        });
     });
 });

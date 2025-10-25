@@ -1,17 +1,11 @@
 # projet-IAL
 ## Configuration
-### Configuration générale
+### Configuration
 Le fichier `.env.queues` à la racine du projet contient les noms des différentes queues utilisées dans la pipeline. Il permet de définir l'orchestration des différents nodes de la pipeline en fonction des queues configurées.
-### Configuration dev
 Le fichier `.env.docker` à la racine du projet contient les variables d'environnement suivnates :
 - NATS_URL : L'URL du broker NATS
 - BOX_PUSH_SCHEDULE_INTERVAL : L'intervalle de push des données depuis le boitier (box) vers le broker NATS en millisecondes.
-### Configuration prod 
-Le fichier `.env.production` à la racine du projet contient les variables d'environnement suivnates : 
-- NATS_URL : L'URL du broker NATS
-- BOX_PUSH_SCHEDULE_INTERVAL : L'intervalle de push des données depuis le boitier (box) vers le broker NATS en millisecondes.
-- NATS_CA_FILE : Le chemin vers le certificat CA pour la connexion TLS au broker NATS.
-- NKEY_SEED_* : La seed de la NKey pour chaque service de la pipeline.
+
 ## Démarrage
 ### Construire toutes les images docker
 Dans un git bash ou wsl :
@@ -22,12 +16,6 @@ Dans un git bash ou wsl :
 Dans un git bash ou wsl :
 ```bash
 ./start-pipeline.sh
-```
-
-### Démarrer la pipeline en mode production
-Dans un git bash ou wsl :
-```bash
-./start-pipeline-prod.sh
 ```
 
 ## La pipeline
@@ -147,3 +135,35 @@ Pour créer le projet sur sonarcloud, il faut lancer la commande suivante dans l
 ```bash
 export SONAR_TOKEN="token_a_prendre_sur_la_conversation_discord" && npx sonar-scan
 ```
+
+## Sécurité
+### TLS 
+TLS permet de chiffrer les échanges entre les clients et le broker NATS. Un certificat serveur est utilisé pour authentifier le broker auprès des clients.
+#### Exemple de génération de certificats
+
+- Créer une clé privée CA
+``` shell
+openssl genrsa -out ca.key 4096
+``` 
+
+- Créer un certificat CA auto-signé
+``` shell
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "/CN=MyNatsCA"
+```
+
+- Créer une clé serveur
+``` shell
+openssl genrsa -out server.key 2048
+```
+
+- CSR (demande de signature) selon le hostname du broker
+```shell
+openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
+```
+
+- Signer le certificat serveur avec la CA
+```shell
+openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
+```
+
+Le serveur requiert `server.crt` et `server.key` pour démarrer en TLS. Le client requiert `ca.pem` pour vérifier l'identité du broker lorsqu'il s'y connecte

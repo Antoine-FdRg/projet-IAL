@@ -41,6 +41,6 @@
     "esModuleInterop": true,
     "moduleResolution": "NodeNext"
   },
-  "include": ["/**/*.ts"],
+  // "include": ["/**/*.ts"],
   "exclude": ["node_modules"]
 }
