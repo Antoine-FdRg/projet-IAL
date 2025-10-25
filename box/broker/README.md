@@ -15,7 +15,10 @@ Le fichier de configuration est passé au container NATS via un volume docker. D
 #### NKeys
 permet d'authentifier les clients auprès du broker NATS via une paire de clés publique/privée.
 
+*Prérequis : installer Go*
+
 **Génerer un couple de NKey**
+
 ``` shell
 nk -gen user -pubout
 ```
@@ -49,3 +52,21 @@ openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
 openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
 ```
 - Le broker requiert `server.crt` et `server.key` pour démarrer en TLS. Le client NATS requiert `ca.pem` pour vérifier l'identité du broker lorsqu'il s'y connecte
+
+```mermaid
+flowchart LR
+  subgraph TOP
+    direction TB
+    subgraph B1
+        direction RL
+        i1 -->f1
+    end
+    subgraph B2
+        direction BT
+        i2 -->f2
+    end
+  end
+  A --> TOP --> B
+  B1 --> B2
+
+```
