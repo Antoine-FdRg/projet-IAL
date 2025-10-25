@@ -9,10 +9,12 @@ describe('EnvService', () => {
             NATS_CA_FILE: '/path/to/ca',
             OUTLIER_FILTER_CONSUME_QUEUE: 'queue.consume',
             POULS_MAX: '200',
+            POULS_MIN: '0',
             TEMPERATURE_MIN: '10',
             TEMPERATURE_MAX: '40',
             POIDS_MIN: '20',
             POIDS_MAX: '200',
+            STEPS_MIN: '0'
         };
     });
 
@@ -41,6 +43,10 @@ describe('EnvService', () => {
         expect(EnvService.getPulseMax()).toBe(200);
     });
 
+    test('should return pouls min', () => {
+        expect(EnvService.getPulseMin()).toBe(0);
+    });
+
     test('should return temperature min', () => {
         expect(EnvService.getTemperatureMin()).toBe(10);
     });
@@ -55,6 +61,10 @@ describe('EnvService', () => {
 
     test('should return poids max', () => {
         expect(EnvService.getWeightMax()).toBe(200);
+    });
+
+    test('should return steps min', () => {
+        expect(EnvService.getStepsMin()).toBe(0);
     });
 
     test('should throw error if missing NATS_SEED', () => {
@@ -77,6 +87,11 @@ describe('EnvService', () => {
         expect(() => EnvService.getPulseMax()).toThrow();
     });
 
+    test('should throw error if missing POULS_MIN', () => {
+        delete process.env.POULS_MIN;
+        expect(() => EnvService.getPulseMin()).toThrow();
+    });
+
     test('should throw error if missing TEMPERATURE_MIN', () => {
         delete process.env.TEMPERATURE_MIN;
         expect(() => EnvService.getTemperatureMin()).toThrow();
@@ -95,6 +110,11 @@ describe('EnvService', () => {
     test('should throw error if missing POIDS_MAX', () => {
         delete process.env.POIDS_MAX;
         expect(() => EnvService.getWeightMax()).toThrow();
+    });
+
+    test('should throw error if missing STEPS_MIN', () => {
+        delete process.env.STEPS_MIN;
+        expect(() => EnvService.getStepsMin()).toThrow();
     });
 
     test('should verify queue environment variables without throwing', () => {

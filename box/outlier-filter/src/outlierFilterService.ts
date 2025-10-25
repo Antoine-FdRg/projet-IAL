@@ -68,7 +68,7 @@ export class OutlierFilterService {
         const max = EnvService.getTemperatureMax();
         const min = EnvService.getTemperatureMin();
 
-        return !(value > max || value < min);
+        return !(value < min || value > max);
     }
 
     private static isValidPulse(value: number): boolean {

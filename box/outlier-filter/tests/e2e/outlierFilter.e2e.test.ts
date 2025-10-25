@@ -34,6 +34,8 @@ describe('Outlier Filter E2E Tests', () => {
         EnvService.getTemperatureMin.mockReturnValue(32);
         EnvService.getTemperatureMax.mockReturnValue(42);
         EnvService.getPulseMax.mockReturnValue(250);
+        EnvService.getPulseMin.mockReturnValue(0);
+        EnvService.getStepsMin.mockReturnValue(0);
 
         const inputData: MeasurementList = {
             boxId: 'e2e-test-box',
@@ -55,6 +57,12 @@ describe('Outlier Filter E2E Tests', () => {
                     value: 80,
                     unit: 'bpm',
                     timestamp: '2024-01-01T10:02:00Z'
+                },
+                {
+                    type: 'steps',
+                    value: 1000,
+                    unit: 'steps',
+                    timestamp: '2024-01-01T10:03:00Z'
                 }
             ]
         };
@@ -163,7 +171,8 @@ describe('Outlier Filter E2E Tests', () => {
             dataList: [
                 { type: 'temperature', value: 50, unit: '°C', timestamp: '2024-01-01T10:00:00Z' }, // Too high
                 { type: 'weight', value: 10, unit: 'kg', timestamp: '2024-01-01T10:01:00Z' }, // Too low
-                { type: 'pulse', value: 300, unit: 'bpm', timestamp: '2024-01-01T10:02:00Z' } // Too high
+                { type: 'pulse', value: 300, unit: 'bpm', timestamp: '2024-01-01T10:02:00Z' }, // Too high
+                { type: 'steps', value: -100, unit: 'steps', timestamp: '2024-01-01T10:03:00Z' } // Negative steps
             ]
         };
 
@@ -186,7 +195,8 @@ describe('Outlier Filter E2E Tests', () => {
                 { type: 'weight', value: 5, unit: 'kg', timestamp: '2024-01-01T10:03:00Z' }, // Invalid - too low
                 { type: 'pulse', value: 90, unit: 'bpm', timestamp: '2024-01-01T10:04:00Z' }, // Valid
                 { type: 'pulse', value: 300, unit: 'bpm', timestamp: '2024-01-01T10:05:00Z' }, // Invalid - too high
-                { type: 'steps', value: 5000, unit: 'steps', timestamp: '2024-01-01T10:06:00Z' } // Valid - no filtering
+                { type: 'steps', value: 5000, unit: 'steps', timestamp: '2024-01-01T10:06:00Z' }, // Valid - no filtering
+                { type: 'steps', value: -10, unit: 'steps', timestamp: '2024-01-01T10:06:00Z' } // Invalid - too low
             ]
         };
 
@@ -195,7 +205,7 @@ describe('Outlier Filter E2E Tests', () => {
 
         expect(filteredResult).not.toBeNull();
         expect(filteredResult!.boxId).toBe('mixed-test-box');
-        expect(filteredResult!.dataList).toHaveLength(4); // 3 invalid filtered out
+        expect(filteredResult!.dataList).toHaveLength(4); // 4 invalid filtered out
 
         // Verify only valid measurements remain
         const temperatures = filteredResult!.dataList.filter(m => m.type === 'temperature');
