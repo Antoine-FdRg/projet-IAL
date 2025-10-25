@@ -299,7 +299,6 @@ interface MeasurementMessage {
 
 - Créer une issue sur GitHub pour les bugs ou demandes de fonctionnalités
 - Utiliser le Discord du projet pour les discussions
-- Consulter le `CLAUDE.md` pour l'architecture générale
 - Consulter les README individuels des services pour les détails spécifiques
 
 ## Licence
