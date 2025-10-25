@@ -1,47 +1,18 @@
-import { connect, JSONCodec, nkeyAuthenticator, type ConnectionOptions } from "nats";
+import { connect, JSONCodec, type ConnectionOptions } from "nats";
 import dotenv from "dotenv";
-import type { MeasurementList, RawMeasurement } from "./type.js";
+import type { MeasurementList } from "./type.js";
 dotenv.config();
 const getConnectionOptions: () => ConnectionOptions = () => {
 
   if (!process.env.NATS_SERVER) {
     throw new Error("Veuillez définir la variable d'environnement NATS_SERVER");
   }
-
-  if (process.env.NATS_SERVER?.startsWith("http://")) {
-    return getDevConnectionOptions();
-  }
-  return getProdConnectionOptions();
-};
-
-const getProdConnectionOptions = () => {
-  if (!process.env.NATS_SEED) {
-    throw new Error("Veuillez définir la variable d'environnement NATS_SEED");
-  }
-  if (!process.env.NATS_CA_FILE) {
-    throw new Error("Veuillez définir la variable d'environnement NATS_CA_FILE");
-  }
-  console.log("🔌 Connexion au serveur NATS sécurisé avec les paramètres suivants :");
-  console.log(`   - NATS_SERVER: ${process.env.NATS_SERVER}`);
-  console.log(`   - NATS_SEED: ${process.env.NATS_SEED}`);
-  console.log(`   - NATS_CA_FILE: ${process.env.NATS_CA_FILE}`);
-  const seed = new TextEncoder().encode(process.env.NATS_SEED);
-  return {
-    servers: process.env.NATS_SERVER,
-    tls: {
-      caFile: process.env.NATS_CA_FILE,
-    },
-    authenticator: nkeyAuthenticator(seed)
-  } as ConnectionOptions;
-}
-
-const getDevConnectionOptions = () => {
   console.log("🔌 Connexion au serveur NATS de dev avec les paramètres suivants :");
   console.log(`   - NATS_SERVER: ${process.env.NATS_SERVER}`);
   return {
     servers: process.env.NATS_SERVER,
   } as ConnectionOptions;
-}
+};
 
 const getPublishQueue = () => {
   if (!process.env.BOX_PRODUCER_QUEUE) {
