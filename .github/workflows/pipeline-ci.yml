@@ -50,6 +50,7 @@ jobs:
           - box/cleaner
           - box/normalizer
           - box/outlier-filter
+          - save-service
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
