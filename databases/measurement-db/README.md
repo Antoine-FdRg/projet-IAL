@@ -14,13 +14,11 @@ TimescaleDB est une extension PostgreSQL optimisée pour les séries temporelles
 ## Tables
 
 ### `boxes`
-Stocke les informations des boitiers et leurs tokens d'authentification.
+Stocke les informations des boitiers. L'UUID sert à la fois d'identifiant et de token d'authentification.
 
 | Colonne | Type | Description |
 |---------|------|-------------|
-| id | SERIAL | Clé primaire |
-| box_id | VARCHAR(255) | Identifiant unique du boitier |
-| token_hash | VARCHAR(255) | Hash SHA-256 du token d'authentification |
+| box_id | UUID | Clé primaire - Identifiant unique du boitier (sert aussi de token d'authentification) |
 | description | TEXT | Description optionnelle |
 | created_at | TIMESTAMPTZ | Date de création |
 | updated_at | TIMESTAMPTZ | Date de dernière modification |
@@ -31,7 +29,7 @@ Hypertable TimescaleDB pour les mesures (température, poids, pouls, pas).
 | Colonne | Type | Description |
 |---------|------|-------------|
 | id | BIGSERIAL | Clé primaire |
-| box_id | VARCHAR(255) | Référence au boitier (FK) |
+| box_id | UUID | Référence au boitier (FK) |
 | measurement_type | VARCHAR(50) | Type : temperature, weight, pulse, steps |
 | value | NUMERIC(10,2) | Valeur de la mesure |
 | unit | VARCHAR(20) | Unité de mesure (kg, °C, bpm, etc.) |
@@ -70,24 +68,28 @@ docker-compose logs -f measurement-db
 
 ## Authentification des boitiers
 
-### Tokens de test
+### UUIDs de test
 
-Les tokens suivants sont créés au démarrage (seed data) :
+Les boitiers suivants sont créés au démarrage (seed data) :
 
-| Box ID | Token en clair | Hash SHA-256 |
-|--------|----------------|--------------|
-| box1 | box1-secret-token | 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8 |
-| box2 | box2-secret-token | 6cf4e8f6e7d3f8b9a5c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4 |
+| Description | UUID (box_id / token) |
+|-------------|----------------------|
+| Test Box 1 | `550e8400-e29b-41d4-a716-446655440001` |
+| Test Box 2 | `550e8400-e29b-41d4-a716-446655440002` |
 
-### Générer un nouveau token
+### Ajouter un nouveau boitier
 
 ```bash
-# Générer un token SHA-256
-echo -n "mon-token-secret" | sha256sum
+# Générer un UUID v4
+uuidgen
 
-# Insérer dans la base
+# Ou utiliser PostgreSQL pour générer un UUID
 docker exec -it ial-measurement-db psql -U ial_user -d measurement_db -c \
-  "INSERT INTO boxes (box_id, token_hash, description) VALUES ('box3', '<hash>', 'Description');"
+  "INSERT INTO boxes (description) VALUES ('Nouveau boitier') RETURNING box_id;"
+
+# Ou spécifier un UUID particulier
+docker exec -it ial-measurement-db psql -U ial_user -d measurement_db -c \
+  "INSERT INTO boxes (box_id, description) VALUES ('550e8400-e29b-41d4-a716-446655440003', 'Box 3');"
 ```
 
 ## Fonctionnalités TimescaleDB
@@ -106,13 +108,13 @@ La vue `measurements_hourly` est rafraîchie toutes les heures avec les statisti
 ```sql
 -- Récupérer les mesures des dernières 24h pour un boitier
 SELECT * FROM measurements
-WHERE box_id = 'box1'
+WHERE box_id = '550e8400-e29b-41d4-a716-446655440001'
   AND timestamp > NOW() - INTERVAL '24 hours'
 ORDER BY timestamp DESC;
 
 -- Statistiques horaires sur la dernière semaine
 SELECT * FROM measurements_hourly
-WHERE box_id = 'box1'
+WHERE box_id = '550e8400-e29b-41d4-a716-446655440001'
   AND bucket > NOW() - INTERVAL '7 days'
 ORDER BY bucket DESC;
 
@@ -147,6 +149,10 @@ docker exec -it ial-measurement-db psql -U ial_user -d measurement_db
 ## Intégration avec save-service
 
 Le save-service se connecte à cette base via le réseau Docker `ial-pipeline_default` et utilise :
-- L'authentification par token hash pour valider les boitiers
+- L'authentification par UUID pour valider les boitiers
 - L'insertion en batch pour optimiser les performances
 - Les index temporels pour des écritures rapides
+
+Le `box_id` (UUID) sert à la fois :
+- D'identifiant unique du boitier
+- De token d'authentification (Bearer token dans les requêtes HTTP)
