@@ -1,8 +1,6 @@
-version: "3.9"
-
 services:
   userdb:
-    image: postgres:latest
+    image: postgres:16
     container_name: userdb
     restart: always
     environment:
@@ -13,10 +11,10 @@ services:
       - "5432:5432"
     volumes:
       # Volume de données persistant
-      - userdb_data:/var/lib/postgresql
+      - userdb_data:/var/lib/postgresql/data
       # Scripts d'initialisation (exécutés uniquement au premier démarrage)
-      - ./init_userdb.sql:/docker-entrypoint-initdb.d/01_init_userdb.sql
-      - ./donnees_insert_userdb.sql:/docker-entrypoint-initdb.d/02_donnees_insert_userdb.sql
+      - ./init_userdb.sql:/docker-entrypoint-initdb.d/01_init_userdb.sql:ro
+      - ./donnees_insert_userdb.sql:/docker-entrypoint-initdb.d/02_donnees_insert_userdb.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d userdb"]
       interval: 5s

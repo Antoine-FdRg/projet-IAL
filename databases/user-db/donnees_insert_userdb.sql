@@ -6,7 +6,7 @@
 INSERT INTO patient (nss, nom, prenom, date_naissance, adresse, station_token, description)
 VALUES
 ('2980548754123', 'Dupont', 'Alice', '1998-05-14', '12 rue des Lilas, Nice', '550e8400-e29b-41d4-a716-446655440001', '{"allergies": ["penicilline"], "pathologies": ["asthme léger"]}'),
-('1011275432198', 'Martin', 'Arthur', '2001-12-27', '45 avenue Jean Médecin, Nice', '550e8400-e29b-41d4-a716-446655440002', '{"allergies": [], "pathologies": ["hypertension"]}')
+('1011275432198', 'Martin', 'Arthur', '2001-12-27', '45 avenue Jean Médecin, Nice', '550e8400-e29b-41d4-a716-446655440002', '{"allergies": [], "pathologies": ["hypertension"]}');
 
 -- 🔹 Externes (Docteurs, Infirmiers, Proches)
 INSERT INTO externe (id, nom, prenom, tel, email, push_token)
@@ -30,7 +30,7 @@ VALUES
 INSERT INTO rel_patient_externe (id_patient, id_externe, type)
 VALUES
 ('2980548754123', (SELECT id FROM externe WHERE nom='Bernard' AND prenom='Paul'), 'docteur'),
-('2980548754123', (SELECT id FROM externe WHERE nom='Moreau' AND prenom='Roxane'), 'proche'),
+('2980548754123', (SELECT id FROM externe WHERE nom='Moreau' AND prenom='Tina'), 'proche'),
 ('1011275432198', (SELECT id FROM externe WHERE nom='Lefevre' AND prenom='Camille'), 'infirmier');
 
 -- 🔹 Relations Patient ↔ Device
