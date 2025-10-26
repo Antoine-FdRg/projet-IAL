@@ -17,7 +17,7 @@ CREATE TABLE patient (
     prenom VARCHAR NOT NULL,
     date_naissance DATE NOT NULL,
     adresse VARCHAR,
-    station_token VARCHAR,
+    station_token UUID,
     description JSON
 );
 

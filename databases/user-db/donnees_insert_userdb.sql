@@ -5,9 +5,8 @@
 -- 🔹 Patients
 INSERT INTO patient (nss, nom, prenom, date_naissance, adresse, station_token, description)
 VALUES
-('2980548754123', 'Dupont', 'Alice', '1998-05-14', '12 rue des Lilas, Nice', 'STATION_A', '{"allergies": ["penicilline"], "pathologies": ["asthme léger"]}'),
-('1011275432198', 'Martin', 'Lucas', '2001-12-27', '45 avenue Jean Médecin, Nice', 'STATION_B', '{"allergies": [], "pathologies": ["hypertension"]}'),
-('2860923456789', 'Durand', 'Chloé', '1986-09-23', '2 impasse des Oliviers, Antibes', 'STATION_C', '{"allergies": ["latex"], "pathologies": ["diabète"]}');
+('2980548754123', 'Dupont', 'Alice', '1998-05-14', '12 rue des Lilas, Nice', '550e8400-e29b-41d4-a716-446655440001', '{"allergies": ["penicilline"], "pathologies": ["asthme léger"]}'),
+('1011275432198', 'Martin', 'Arthur', '2001-12-27', '45 avenue Jean Médecin, Nice', '550e8400-e29b-41d4-a716-446655440002', '{"allergies": [], "pathologies": ["hypertension"]}')
 
 -- 🔹 Externes (Docteurs, Infirmiers, Proches)
 INSERT INTO externe (id, nom, prenom, tel, email, push_token)
@@ -45,5 +44,4 @@ VALUES
 INSERT INTO doctor_notif (id_patient, reason)
 VALUES
 ('2980548754123', 'Anomalie de fréquence cardiaque détectée'),
-('2860923456789', 'Température corporelle élevée'),
 ('1011275432198', 'Poids instable depuis 2 semaines');
