@@ -12,10 +12,21 @@ Dans un git bash ou wsl :
 ```bash
 ./build-all.sh
 ```
+Ce script construit tous les services de la pipeline NATS (`box/*`) ainsi que le `save-service`.
+
 ### Démarrer la pipeline complète
 Dans un git bash ou wsl :
 ```bash
 ./start-pipeline.sh
+```
+Ce script démarre :
+1. La base de données TimescaleDB (`databases/measurement-db`)
+2. Tous les services de la pipeline NATS
+3. Le save-service (API HTTP)
+
+### Arrêter tous les services
+```bash
+./stop-all.sh
 ```
 
 ## La pipeline
@@ -136,8 +147,34 @@ Pour créer le projet sur sonarcloud, il faut lancer la commande suivante dans l
 export SONAR_TOKEN="token_a_prendre_sur_la_conversation_discord" && npx sonar-scan
 ```
 
+## Base de données
+### TimescaleDB
+Le projet utilise TimescaleDB (extension PostgreSQL optimisée pour les séries temporelles) pour stocker les mesures.
+
+Configuration dans `databases/measurement-db`:
+- Hypertables pour partitionnement automatique par timestamp
+- Continuous aggregates pour statistiques pré-calculées
+- Retention policy de 90 jours
+- Deux tables : `boxes` (authentification) et `measurements` (données)
+
+Démarrer uniquement la base de données :
+```bash
+cd databases/measurement-db && docker-compose up -d
+```
+
+Connexion à la base :
+```bash
+docker exec -it ial-measurement-db psql -U ial_user -d measurement_db
+```
+
 ## Sécurité
-### TLS 
+### Authentification Save Service
+Le save-service utilise des tokens Bearer pour authentifier les boitiers :
+- Tokens stockés en SHA-256 dans la table `boxes`
+- Header requis : `Authorization: Bearer <token>`
+- Tokens de test : `box1-secret-token`, `box2-secret-token`
+
+### TLS NATS 
 TLS permet de chiffrer les échanges entre les clients et le broker NATS. Un certificat serveur est utilisé pour authentifier le broker auprès des clients.
 #### Exemple de génération de certificats
 

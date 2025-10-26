@@ -1,6 +1,13 @@
 #!/bin/bash
 
-echo "stopping all"
+echo "🛑 Stopping all services..."
+
+# Stop save service
+echo "Stopping save service..."
+cd save-service && docker-compose down && cd ..
+
+# Stop pipeline services
+echo "Stopping pipeline services..."
 docker-compose -p ial-pipeline \
                --env-file .env.docker \
                --env-file .env.queues \
@@ -10,4 +17,8 @@ docker-compose -p ial-pipeline \
                --file box/outlier-filter/docker-compose.yml \
                --file box/normalizer/docker-compose.yml down
 
-echo "all services stopped"
+# Stop measurement database
+echo "Stopping measurement database..."
+cd databases/measurement-db && docker-compose down && cd ../..
+
+echo "✅ All services stopped"
