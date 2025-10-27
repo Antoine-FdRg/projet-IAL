@@ -8,6 +8,8 @@ docker-compose -p ial-pipeline \
                --file box/broker-client/docker-compose.yml \
                --file box/cleaner/docker-compose.yml \
                --file box/outlier-filter/docker-compose.yml \
-               --file box/normalizer/docker-compose.yml down
+               --file box/normalizer/docker-compose.yml \
+               --file databases/user-db/docker-compose.yml \
+               down
 
 echo "all services stopped"
