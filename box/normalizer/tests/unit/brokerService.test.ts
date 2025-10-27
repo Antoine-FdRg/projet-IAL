@@ -21,16 +21,4 @@ describe('BrokerService Unit Tests', () => {
             });
         });
     });
-
-    describe('getDevConnectionOptions', () => {
-        it('should return simple connection options', () => {
-            mockEnvService.getBrokerURL.mockReturnValue('http://localhost:4222');
-
-            const result = BrokerService.getDevConnectionOptions();
-
-            expect(result).toEqual({
-                servers: 'http://localhost:4222'
-            });
-        });
-    });
 });

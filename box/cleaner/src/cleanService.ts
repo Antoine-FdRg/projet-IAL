@@ -1,23 +1,34 @@
-import type { RawMeasurement, MeasurementList } from "./type.js";
+import type { RawMeasurement } from "./type";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 export class CleanService {
-  static cleanMeasurementList(data: Uint8Array<ArrayBufferLike>): MeasurementList | null {
-    return cleanMeasurementList(data);
+  static cleanMeasurement(data: Uint8Array<ArrayBufferLike>): RawMeasurement | null {
+    return cleanMeasurement(data);
   }
 }
 
-const isValidMeasurementListStructure = (obj: any): obj is { boxId: string; dataList: any[] } => {
+/**
+ * Validation de la structure de l'objet décodé
+ * {
+ *    "type" : MeasurementType
+ *    "value" : number,
+ *    "unit" : string,
+ *    "timestamp": string
+ * }
+ * @param obj
+ */
+const isValidMeasurementStructure = (obj: any): obj is { boxId: string; dataList: any[] } => {
   return obj &&
     typeof obj === 'object' &&
-    typeof obj.boxId === 'string' &&
-    obj.boxId.trim() !== '' &&
-    Array.isArray(obj.dataList);
+    typeof obj.type === 'string' &&
+    typeof obj.value === 'number' &&
+    typeof obj.unit === 'string' &&
+    typeof obj.timestamp === 'string';
 };
 
-const cleanSingleMeasurement = (measurement: any, index: number): RawMeasurement | null => {
+const cleanSingleMeasurement = (measurement: any): RawMeasurement | null => {
   try {
     if (!measurement || typeof measurement !== 'object') {
       return null;
@@ -38,12 +49,12 @@ const cleanSingleMeasurement = (measurement: any, index: number): RawMeasurement
 
     return { type, value, unit, timestamp } as RawMeasurement;
   } catch (error) {
-    console.error(`❌ Erreur lors du nettoyage de la mesure ${index}:`, error);
+    console.error(`❌ Erreur lors du nettoyage de la mesure:`, error);
     return null;
   }
 };
 
-const cleanMeasurementList = (data: Uint8Array<ArrayBufferLike>): MeasurementList | null => {
+const cleanMeasurement = (data: Uint8Array<ArrayBufferLike>): RawMeasurement | null => {
   try {
     const decoder = new TextDecoder();
     const decodedString = decoder.decode(data);
@@ -59,33 +70,16 @@ const cleanMeasurementList = (data: Uint8Array<ArrayBufferLike>): MeasurementLis
       return null;
     }
 
-    if (!isValidMeasurementListStructure(parsedData)) {
+    if (!isValidMeasurementStructure(parsedData)) {
       return null;
     }
 
-    const { boxId, dataList } = parsedData;
-    const cleanedMeasurements: RawMeasurement[] = [];
-    let errorCount = 0;
-
-
-    for (let i = 0; i < dataList.length; i++) {
-      const cleanedMeasurement = cleanSingleMeasurement(dataList[i], i);
-      if (cleanedMeasurement) {
-        cleanedMeasurements.push(cleanedMeasurement);
-      } else {
-        errorCount++;
-      }
+    const cleanMeasurements: RawMeasurement | null = cleanSingleMeasurement(parsedData);
+    if (!cleanMeasurements) {
+        return null;
     }
 
-    if (cleanedMeasurements.length === 0) {
-      return null;
-    }
-
-    if (errorCount > 0) {
-    }
-
-    return { boxId, dataList: cleanedMeasurements };
-
+    return cleanMeasurements;
   } catch (error) {
     return null;
   }

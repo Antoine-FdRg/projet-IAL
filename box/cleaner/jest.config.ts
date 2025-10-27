@@ -6,13 +6,13 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   testEnvironment: "node",
-  extensionsToTreatAsEsm: [".ts"],
-  moduleFileExtensions: ["ts", "tsx", "js", "mjs", "cjs", "jsx", "json", "node"],
   transform: {
     "^.+\\.tsx?$": ["ts-jest", {
       useESM: true
     }]
   },
+  extensionsToTreatAsEsm: [".ts"],
+  moduleFileExtensions: ["ts", "tsx", "js", "mjs", "cjs", "jsx", "json", "node"],
   testMatch: [
     "<rootDir>/tests/**/*.test.ts"
   ],

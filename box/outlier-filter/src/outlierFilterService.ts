@@ -1,5 +1,4 @@
-import type {RawMeasurement, MeasurementList} from "./type";
-// @ts-ignore
+import type {RawMeasurement} from "./type";
 import dotenv from "dotenv";
 import {EnvService} from "./envService";
 
@@ -7,35 +6,27 @@ dotenv.config();
 
 export class OutlierFilterService {
 
-    static filterAndNormalizeMeasurementList(data: Uint8Array<ArrayBufferLike>): MeasurementList | null {
-        return this.filterOutlierMeasurements(data);
+    static filterAndNormalizeMeasurement(data: Uint8Array<ArrayBufferLike>): RawMeasurement | null {
+        return this.filterOutlierMeasurement(data);
     }
 
-    private static filterOutlierMeasurements(data: Uint8Array<ArrayBufferLike>): MeasurementList | null {
+    private static filterOutlierMeasurement(data: Uint8Array<ArrayBufferLike>): RawMeasurement | null {
         try {
             const jsonString = new TextDecoder().decode(data);
-            const rawData = JSON.parse(jsonString) as MeasurementList;
+            const rawData = JSON.parse(jsonString) as RawMeasurement;
 
-            if (!rawData.boxId || !Array.isArray(rawData.dataList)) {
-                console.error(`[${new Date().toISOString()}] - Invalid data structure: missing boxId or dataList`);
+            // if parsed data is null or undefined or empty JSON
+            if (!rawData || Object.keys(rawData).length === 0) {
+                console.error(`[${new Date().toISOString()}] - Parsed data is null or undefined`);
                 return null;
             }
 
-            const filteredDataList: RawMeasurement[] = rawData.dataList
-                .filter((measurement: RawMeasurement) => {
-                    if (!measurement) return false;
-                    return this.isValidMeasurement(measurement);
-                });
-
-            if (filteredDataList.length === 0) {
-                console.error(`[${new Date().toISOString()}] - No valid measurements after outlier filtering`);
-                return null;
+            if (this.isValidMeasurement(rawData)) {
+                return rawData;
             }
 
-            return {
-                boxId: rawData.boxId,
-                dataList: filteredDataList
-            };
+            console.error(`[${new Date().toISOString()}] - Outlier detected in measurement data: ${JSON.stringify(rawData)}`);
+            return null;
         } catch (error) {
             console.error(`[${new Date().toISOString()}] - Error parsing measurement data:`, error);
             return null;

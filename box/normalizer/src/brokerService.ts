@@ -1,5 +1,5 @@
 import { type ConnectionOptions } from "nats";
-import { EnvService } from "./envService.ts";
+import { EnvService } from "./envService";
 
 export class BrokerService {
 

@@ -1,9 +1,10 @@
 import { connect, JSONCodec, type ConnectionOptions } from "nats";
 import dotenv from "dotenv";
-import type { MeasurementList } from "./type.js";
-dotenv.config();
-const getConnectionOptions: () => ConnectionOptions = () => {
+import type {RawMeasurement} from "./type";
 
+dotenv.config();
+
+export const getConnectionOptions = (): ConnectionOptions => {
   if (!process.env.NATS_SERVER) {
     throw new Error("Veuillez définir la variable d'environnement NATS_SERVER");
   }
@@ -14,15 +15,15 @@ const getConnectionOptions: () => ConnectionOptions = () => {
   } as ConnectionOptions;
 };
 
-const getPublishQueue = () => {
+export const getPublishQueue = (): string => {
   if (!process.env.BOX_PRODUCER_QUEUE) {
     throw new Error("Veuillez définir la variable d'environnement BOX_PRODUCER_QUEUE");
   }
   console.log(`   - BOX_PRODUCER_QUEUE: ${process.env.BOX_PRODUCER_QUEUE}`);
   return process.env.BOX_PRODUCER_QUEUE;
-}
+};
 
-const checkBrokerHealth = async (connectionOptions: ConnectionOptions): Promise<boolean> => {
+export const checkBrokerHealth = async (connectionOptions: ConnectionOptions): Promise<boolean> => {
   try {
     console.log("🔍 Vérification de la connexion au broker NATS...");
     const nc = await connect(connectionOptions);
@@ -39,7 +40,27 @@ const checkBrokerHealth = async (connectionOptions: ConnectionOptions): Promise<
   }
 };
 
-async function main() {
+export const publishMeasurements = async (
+  connectionOptions: ConnectionOptions,
+  publishQueue: string,
+  measurementList: RawMeasurement[],
+): Promise<void> => {
+  const nc = await connect(connectionOptions);
+  const js = nc.jetstream();
+  const codec = JSONCodec();
+  console.log("Connecté au serveur NATS");
+
+  for (const measurement of measurementList) {
+    console.log(`📥 Envoi de la mesure : ${JSON.stringify(measurement)}`);
+    await js.publish(publishQueue, codec.encode(measurement));
+  }
+  console.log(`📤 Envoyé : ${JSON.stringify(measurementList)}`);
+
+  await nc.close();
+  console.log("✅ Publisher terminé");
+};
+
+export async function main(): Promise<void> {
   const connectionOptions = getConnectionOptions();
   const publishQueue = getPublishQueue();
 
@@ -47,26 +68,16 @@ async function main() {
   const isBrokerHealthy = await checkBrokerHealth(connectionOptions);
   if (!isBrokerHealthy) {
     console.warn("⚠️  Impossible de joindre le broker NATS. Arrêt du programme.");
-    process.exit(1);
+    throw new Error("Broker NATS not reachable");
   }
 
-  const nc = await connect(connectionOptions);
-  const js = nc.jetstream();
-  const codec = JSONCodec();
-  console.log("Connecté au serveur NATS");
-
-  const msg: MeasurementList | any = createRandomMeasurementList();
-  await js.publish(publishQueue, codec.encode(msg));
-  console.log(`📤 Envoyé : ${msg}`);
-
-  await nc.close();
-  console.log("✅ Publisher terminé");
+  const measurementList: RawMeasurement[] = createRandomMeasurementList();
+  await publishMeasurements(connectionOptions, publishQueue, measurementList);
 }
 
 
-const createRandomMeasurementList = (): MeasurementList => {
-  const boxId = `box-${Math.floor(Math.random() * 1000)}`;
-  const dataList = [];
+export const createRandomMeasurementList = (): RawMeasurement[] => {
+  const dataList: RawMeasurement[] = [];
 
   const measurementTypes = [
     { type: 'temperature', units: ['°C', '°F'], valueRange: { min: -10, max: 50 }, nonsenseRange: { min: -273, max: 1000 } },
@@ -98,8 +109,8 @@ const createRandomMeasurementList = (): MeasurementList => {
       const range = isNonsenseValue ? measurementConfig.nonsenseRange : measurementConfig.valueRange;
       const { min, max } = range;
 
-      const measurement = {
-        type: measurementConfig.type,
+      const measurement: RawMeasurement = {
+        type: measurementConfig.type as 'temperature' | 'pulse' | 'weight' | 'steps',
         value: Math.round((Math.random() * (max - min) + min) * 100) / 100,
         unit: unit,
         timestamp: new Date().toISOString(),
@@ -108,8 +119,8 @@ const createRandomMeasurementList = (): MeasurementList => {
     }
   }
 
-  return { boxId, dataList };
+  return dataList;
 };
 
 
-main().catch(console.error);
+// main().catch((error) => { console.error(error); process.exit(1); });

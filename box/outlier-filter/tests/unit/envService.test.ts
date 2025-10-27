@@ -8,12 +8,12 @@ describe('EnvService', () => {
             NATS_SEED: 'seed123',
             NATS_CA_FILE: '/path/to/ca',
             OUTLIER_FILTER_CONSUME_QUEUE: 'queue.consume',
-            POULS_MAX: '200',
+            POULS_MAX: '250',
             POULS_MIN: '0',
-            TEMPERATURE_MIN: '10',
-            TEMPERATURE_MAX: '40',
-            POIDS_MIN: '20',
-            POIDS_MAX: '200',
+            TEMPERATURE_MIN: '32',
+            TEMPERATURE_MAX: '42',
+            POIDS_MIN: '15',
+            POIDS_MAX: '500',
             STEPS_MIN: '0'
         };
     });
@@ -40,7 +40,7 @@ describe('EnvService', () => {
     });
 
     test('should return pouls max', () => {
-        expect(EnvService.getPulseMax()).toBe(200);
+        expect(EnvService.getPulseMax()).toBe(250);
     });
 
     test('should return pouls min', () => {
@@ -48,19 +48,19 @@ describe('EnvService', () => {
     });
 
     test('should return temperature min', () => {
-        expect(EnvService.getTemperatureMin()).toBe(10);
+        expect(EnvService.getTemperatureMin()).toBe(32);
     });
 
     test('should return temperature max', () => {
-        expect(EnvService.getTemperatureMax()).toBe(40);
+        expect(EnvService.getTemperatureMax()).toBe(42);
     });
 
     test('should return poids min', () => {
-        expect(EnvService.getWeightMin()).toBe(20);
+        expect(EnvService.getWeightMin()).toBe(15);
     });
 
     test('should return poids max', () => {
-        expect(EnvService.getWeightMax()).toBe(200);
+        expect(EnvService.getWeightMax()).toBe(500);
     });
 
     test('should return steps min', () => {
