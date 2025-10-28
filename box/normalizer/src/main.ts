@@ -19,7 +19,7 @@ async function main() {
     for await (const message of subscribe) {
         const normalizeMeasurement: RawMeasurement | null = NormalizerService.normalizeMeasurement(message.data);
         if (!normalizeMeasurement) {
-            console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à un échec de nettoyage des données.`);
+            console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à la normalisation de la mesure.`);
             message.ack();
             continue;
         }

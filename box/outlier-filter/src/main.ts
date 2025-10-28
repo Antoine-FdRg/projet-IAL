@@ -39,7 +39,7 @@ async function main() {
     for await (const message of subscribe) {
         const filteredList: RawMeasurement | null = OutlierFilterService.filterAndNormalizeMeasurement(message.data);
         if (!filteredList) {
-            console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à un échec de nettoyage des données.`);
+            console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à la suppression d'une mesure aberrante.`);
             message.ack();
             continue;
         }
@@ -47,7 +47,6 @@ async function main() {
         try {
             // Save to MongoDB
             await DatabaseService.saveFilteredMeasurement(filteredList);
-            console.log(`[${new Date().toISOString()}] - Traitement et sauvegarde de la mesure après filtrage des outliers : ${JSON.stringify(filteredList)}`);
         } catch (error) {
             console.error(`[${new Date().toISOString()}] - Erreur lors de la sauvegarde en base:`, error);
         }

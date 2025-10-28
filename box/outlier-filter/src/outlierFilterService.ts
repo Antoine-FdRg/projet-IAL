@@ -25,7 +25,6 @@ export class OutlierFilterService {
                 return rawData;
             }
 
-            console.error(`[${new Date().toISOString()}] - Outlier detected in measurement data: ${JSON.stringify(rawData)}`);
             return null;
         } catch (error) {
             console.error(`[${new Date().toISOString()}] - Error parsing measurement data:`, error);

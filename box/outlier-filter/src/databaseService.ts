@@ -60,7 +60,7 @@ export class DatabaseService {
             };
 
             await this.collection.insertOne(document);
-            console.log(`[${new Date().toISOString()}] - Mesure sauvegardée en base: ${document.messageId}`);
+            console.log(`[${new Date().toISOString()}] - Mesure sauvegardée en base: ${document.messageId} - ${JSON.stringify(measurement)}`);
         } catch (error) {
             console.error(`[${new Date().toISOString()}] - Erreur lors de la sauvegarde:`, error);
             throw error;
