@@ -1,6 +1,6 @@
-import { CleanService } from '../../src/cleanService';
-import { BrokerService } from '../../src/brokerService';
-import { EnvService } from '../../src/envService';
+import {CleanService} from '../../src/cleanService';
+import {BrokerService} from '../../src/brokerService';
+import {EnvService} from '../../src/envService';
 
 // Mock the entire nats module
 jest.mock('nats', () => ({
@@ -17,21 +17,20 @@ describe('Cleaner Pipeline E2E Tests', () => {
     let mockMessage: any;
 
     beforeAll(() => {
-        process.env = { ...originalEnv };
+        process.env = {...originalEnv};
         process.env.NATS_SERVER = 'http://localhost:4222';
         process.env.CLEANER_CONSUME_QUEUE = 'test.e2e.input';
         process.env.CLEANER_PRODUCER_QUEUE = 'test.e2e.output';
 
         // Setup mocks
-        const { connect, consumerOpts, JSONCodec } = require('nats');
+        const {connect, consumerOpts, JSONCodec} = require('nats');
 
         mockMessage = {
             data: new TextEncoder().encode(JSON.stringify({
-                boxId: 'e2e-test-box',
-                dataList: [
-                    { type: 'temperature', value: 23.5, unit: '°C', timestamp: '2023-01-01T12:00:00Z' },
-                    { type: 'pulse', value: 80, unit: 'bpm', timestamp: '2023-01-01T12:01:00Z' }
-                ]
+                type: 'temperature',
+                value: 23.5,
+                unit: '°C',
+                timestamp: '2023-01-01T12:00:00Z'
             })),
             ack: jest.fn(),
         };
@@ -74,31 +73,21 @@ describe('Cleaner Pipeline E2E Tests', () => {
 
     describe('Complete Pipeline Flow', () => {
         it('should process messages end-to-end with mocked NATS', async () => {
-            const { connect, JSONCodec } = require('nats');
+            const {connect, JSONCodec} = require('nats');
 
-            const nc = await connect({ servers: 'http://localhost:4222' });
+            const nc = await connect({servers: 'http://localhost:4222'});
             const js = nc.jetstream();
             const jsonCodec = JSONCodec();
 
-            const inputData = {
-                boxId: 'e2e-test-box',
-                dataList: [
-                    { type: 'temperature', value: 23.5, unit: '°C', timestamp: '2023-01-01T12:00:00Z' },
-                    { type: 'pulse', value: 80, unit: 'bpm', timestamp: '2023-01-01T12:01:00Z' }
-                ]
-            };
-
+            const inputData = {type: 'temperature', value: 23.5, unit: '°C', timestamp: '2023-01-01T12:00:00Z'};
             const consumeQueue = EnvService.getConsumeQueue();
             const producerQueue = EnvService.getProducerQueue();
 
             // Publish test message
-            await js.publish(consumeQueue, jsonCodec.encode(inputData));
+            await js.publish(producerQueue, jsonCodec.encode(JSON.stringify(inputData)));
 
             // Verify publish was called
-            expect(js.publish).toHaveBeenCalledWith(
-                consumeQueue,
-                expect.any(Uint8Array)
-            );
+            expect(js.publish).toHaveBeenCalledWith(producerQueue, expect.any(Uint8Array));
 
             // Simulate message processing
             const subscribe = await js.subscribe(consumeQueue);
@@ -109,12 +98,12 @@ describe('Cleaner Pipeline E2E Tests', () => {
                 break; // Process one message
             }
 
-            expect(messages).toHaveLength(1);
-
-            const cleanedData = CleanService.cleanMeasurementList(messages[0].data);
+            const cleanedData = CleanService.cleanMeasurement(messages[0].data);
             expect(cleanedData).not.toBeNull();
-            expect(cleanedData?.boxId).toBe('e2e-test-box');
-            expect(cleanedData?.dataList).toHaveLength(2);
+            expect(cleanedData!.type).toBe('temperature');
+            expect(cleanedData!.value).toBe(23.5);
+            expect(cleanedData!.unit).toBe('°C');
+            expect(cleanedData!.timestamp).toBe('2023-01-01T12:00:00Z');
 
             messages[0].ack();
             await subscribe.unsubscribe();
@@ -127,9 +116,9 @@ describe('Cleaner Pipeline E2E Tests', () => {
         });
 
         it('should handle invalid messages gracefully with mocked NATS', async () => {
-            const { connect } = require('nats');
+            const {connect} = require('nats');
 
-            const nc = await connect({ servers: 'http://localhost:4222' });
+            const nc = await connect({servers: 'http://localhost:4222'});
             const js = nc.jetstream();
 
             // Mock invalid message
@@ -158,7 +147,7 @@ describe('Cleaner Pipeline E2E Tests', () => {
 
             expect(messages).toHaveLength(1);
 
-            const cleanedData = CleanService.cleanMeasurementList(messages[0].data);
+            const cleanedData = CleanService.cleanMeasurement(messages[0].data);
             expect(cleanedData).toBeNull();
 
             messages[0].ack();
@@ -167,7 +156,7 @@ describe('Cleaner Pipeline E2E Tests', () => {
         });
 
         it('should verify connection options work with mocked NATS', async () => {
-            const { connect } = require('nats');
+            const {connect} = require('nats');
 
             const connectionOptions = BrokerService.getConnectionOptions();
             const nc = await connect(connectionOptions);
@@ -178,31 +167,29 @@ describe('Cleaner Pipeline E2E Tests', () => {
         });
 
         it('should handle connection errors gracefully', async () => {
-            const { connect } = require('nats');
+            const {connect} = require('nats');
 
             // Mock connection failure
             connect.mockRejectedValueOnce(new Error('Connection failed'));
 
-            await expect(connect({ servers: 'http://localhost:4222' }))
+            await expect(connect({servers: 'http://localhost:4222'}))
                 .rejects
                 .toThrow('Connection failed');
         });
 
         it('should process multiple messages in batch', async () => {
-            const { connect, JSONCodec } = require('nats');
+            const {connect, JSONCodec} = require('nats');
 
-            const nc = await connect({ servers: 'http://localhost:4222' });
+            const nc = await connect({servers: 'http://localhost:4222'});
             const js = nc.jetstream();
             const jsonCodec = JSONCodec();
 
             const messages = [
                 {
-                    boxId: 'box-1',
-                    dataList: [{ type: 'temperature', value: 20, unit: '°C', timestamp: '2023-01-01T10:00:00Z' }]
+                    type: 'temperature', value: 20, unit: '°C', timestamp: '2023-01-01T10:00:00Z'
                 },
                 {
-                    boxId: 'box-2',
-                    dataList: [{ type: 'pulse', value: 75, unit: 'bpm', timestamp: '2023-01-01T10:01:00Z' }]
+                    type: 'pulse', value: 75, unit: 'bpm', timestamp: '2023-01-01T10:01:00Z'
                 }
             ];
 
@@ -221,7 +208,7 @@ describe('Cleaner Pipeline E2E Tests', () => {
 
             const processedMessages = [];
             for await (const message of subscribe) {
-                const cleanedData = CleanService.cleanMeasurementList(message.data);
+                const cleanedData = CleanService.cleanMeasurement(message.data);
                 if (cleanedData) {
                     processedMessages.push(cleanedData);
                 }
@@ -230,8 +217,15 @@ describe('Cleaner Pipeline E2E Tests', () => {
             }
 
             expect(processedMessages).toHaveLength(2);
-            expect(processedMessages[0].boxId).toBe('box-1');
-            expect(processedMessages[1].boxId).toBe('box-2');
+            expect(processedMessages[0].type).toBe('temperature');
+            expect(processedMessages[0].value).toBe(20);
+            expect(processedMessages[1].type).toBe('pulse');
+            expect(processedMessages[1].value).toBe(75);
+
+            expect(processedMessages[1].type).toBe('pulse');
+            expect(processedMessages[1].value).toBe(75);
+            expect(processedMessages[1].unit).toBe('bpm');
+            expect(processedMessages[1].timestamp).toBe('2023-01-01T10:01:00Z');
         });
     });
 });

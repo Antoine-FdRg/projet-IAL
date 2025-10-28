@@ -15,8 +15,17 @@ services:
       - POIDS_MIN=${OUTLIER_FILTER_POIDS_MIN}
       - POIDS_MAX=${OUTLIER_FILTER_POIDS_MAX}
       - STEPS_MIN=${OUTLIER_FILTER_STEPS_MIN}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USERNAME=app
+      - MONGO_PASSWORD=root
+      - MONGO_DATABASE=messagesdb
     networks:
       - nats-network
+      - mongo_mongo-network
+
 networks:
   nats-network:
     driver: bridge
+  mongo_mongo-network:
+    external: true

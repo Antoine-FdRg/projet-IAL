@@ -29,28 +29,41 @@ describe('Cleaner Pipeline Integration Tests', () => {
         });
 
         it('should process complete data flow through CleanService', () => {
-            const inputData = {
-                boxId: 'integration-box-123',
-                dataList: [
+            const inputData = [
                     { type: 'temperature', value: 22.5, unit: '°C', timestamp: '2023-01-01T10:00:00Z' },
                     { type: 'invalid', value: 'bad', unit: 'unknown', timestamp: '' },
                     { type: 'pulse', value: 75, unit: 'bpm', timestamp: '2023-01-01T10:01:00Z' },
                     { type: 'weight', value: 68.2, unit: 'kg', timestamp: '2023-01-01T10:02:00Z' }
-                ]
-            };
+                ];
 
-            const encodedData = new TextEncoder().encode(JSON.stringify(inputData));
-            const result = CleanService.cleanMeasurementList(encodedData);
+            let encodedData = new TextEncoder().encode(JSON.stringify(inputData[0]));
+            let result = CleanService.cleanMeasurement(encodedData);
 
             expect(result).not.toBeNull();
-            expect(result?.boxId).toBe('integration-box-123');
-            expect(result?.dataList).toHaveLength(3);
+            expect(result!.type).toBe('temperature');
+            expect(result!.value).toBe(22.5);
+            expect(result!.unit).toBe('°C');
+            expect(result!.timestamp).toBe('2023-01-01T10:00:00Z');
 
-            const types = result?.dataList.map(m => m.type);
-            expect(types).toContain('temperature');
-            expect(types).toContain('pulse');
-            expect(types).toContain('weight');
-            expect(types).not.toContain('invalid');
+            encodedData = new TextEncoder().encode(JSON.stringify(inputData[1]));
+            result = CleanService.cleanMeasurement(encodedData);
+            expect(result).toBeNull();
+
+            encodedData = new TextEncoder().encode(JSON.stringify(inputData[2]));
+            result = CleanService.cleanMeasurement(encodedData);
+            expect(result).not.toBeNull();
+            expect(result!.type).toBe('pulse');
+            expect(result!.value).toBe(75);
+            expect(result!.unit).toBe('bpm');
+            expect(result!.timestamp).toBe('2023-01-01T10:01:00Z');
+
+            encodedData = new TextEncoder().encode(JSON.stringify(inputData[3]));
+            result = CleanService.cleanMeasurement(encodedData);
+            expect(result).not.toBeNull();
+            expect(result!.type).toBe('weight');
+            expect(result!.value).toBe(68.2);
+            expect(result!.unit).toBe('kg');
+            expect(result!.timestamp).toBe('2023-01-01T10:02:00Z');
         });
 
         it('should handle environment configuration validation', () => {

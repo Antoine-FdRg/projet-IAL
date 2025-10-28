@@ -30,13 +30,15 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
     // Custom conf from ChatGPT and IDE suggestions
     "esModuleInterop": true,
-    "moduleResolution": "NodeNext"
-  }
+    "moduleResolution": "nodenext"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "tests"]
 }

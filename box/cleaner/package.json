@@ -5,6 +5,7 @@
   "main": "src/main.ts",
   "scripts": {
     "start": "npx tsx src/main.ts",
+    "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -13,10 +14,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.8.0",
     "dotenv": "^17.2.3",
     "jest": "^30.2.0",
     "nats": "^2.29.3",
@@ -27,7 +26,9 @@
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-typescript": "^7.27.1",
+    "@types/node": "^24.9.1",
     "babel-jest": "^30.2.0",
+    "ts-jest": "^29.2.5",
     "tsx": "^4.20.6"
   }
 }
