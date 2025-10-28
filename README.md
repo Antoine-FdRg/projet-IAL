@@ -1,6 +1,8 @@
 # projet-IAL
+## Analyse des risques
+L'intégralité de l'analyse des risques est disponible dans le document [Analyse des risques](doc/RISQUES.md).
+
 ## Configuration
-### Configuration
 Le fichier `.env.queues` à la racine du projet contient les noms des différentes queues utilisées dans la pipeline. Il permet de définir l'orchestration des différents nodes de la pipeline en fonction des queues configurées.
 Le fichier `.env.docker` à la racine du projet contient les variables d'environnement suivnates :
 - NATS_URL : L'URL du broker NATS
