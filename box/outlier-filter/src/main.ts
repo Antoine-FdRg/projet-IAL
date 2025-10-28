@@ -39,7 +39,7 @@ async function main() {
     for await (const message of subscribe) {
         const filteredList: RawMeasurement | null = OutlierFilterService.filterAndNormalizeMeasurement(message.data);
         if (!filteredList) {
-            console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à la suppression d'une mesure aberrante.`);
+            console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à la suppression d'une mesure aberrante. (${message.data.type})`);
             message.ack();
             continue;
         }
