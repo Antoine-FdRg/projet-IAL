@@ -3,7 +3,9 @@ services:
     image: nats:latest
     hostname: nats-broker
     container_name: nats-broker-${STATION_NUMBER}
-    command: ["-js"]
+    command: ["-js","-sd", "/data"]
+    volumes:
+      - nats-data:/data
     # ports:
     #   - "${NATS_EXTERNAL_PORT}:4222"
     networks:
@@ -23,3 +25,5 @@ networks:
   station-network:
     name: ${STATION_NETWORK}
     driver: bridge
+volumes:
+  nats-data:
