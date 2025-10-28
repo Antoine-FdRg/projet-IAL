@@ -14,15 +14,12 @@ export class DatabaseService {
         const password = EnvService.getMongoPassword();
         const database = EnvService.getMongoDatabase();
 
-        console.log(host, port, username, password);
-        console.log(`mongodb://${username}:${password}@${host}:${port}/${database}`);
-
         return `mongodb://${username}:${password}@${host}:${port}/${database}`;
     }
 
     public static async connect(): Promise<void> {
         try {
-            console.log("[${new Date().toISOString()}] - Tentative de connexion à MongoDB...");
+            console.log(`[${new Date().toISOString()}] - Tentative de connexion à MongoDB...`);
             const connectionString = this.getConnectionString();
             this.client = new MongoClient(connectionString);
             await this.client.connect();

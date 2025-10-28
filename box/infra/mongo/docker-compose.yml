@@ -9,6 +9,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpwd
     volumes:
+      - mongo_data:/data/db
       - ./init/001-init.js:/docker-entrypoint-initdb.d/001-init.js:ro
     networks:
       - mongo-network
@@ -27,6 +28,9 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: admin
     networks:
       - mongo-network
+
+volumes:
+  mongo_data:
 
 networks:
   mongo-network:
