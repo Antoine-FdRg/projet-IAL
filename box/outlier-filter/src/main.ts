@@ -10,7 +10,13 @@ async function main() {
     const nc = await connect(BrokerService.getConnectionOptions());
 
     // Connect to MongoDB
-    await DatabaseService.connect();
+    try {
+        await DatabaseService.connect();
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] - Échec de connexion à MongoDB. Arrêt du service.`);
+        await nc.close();
+        process.exit(1);
+    }
 
     EnvService.verifyQueueEnvVars();
     const js = nc.jetstream();

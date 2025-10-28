@@ -211,7 +211,10 @@ describe('Outlier Filter E2E Tests', () => {
             {type: 'weight', value: 68.5, unit: 'kg', timestamp: '2024-01-01T10:01:00Z'},
             {type: 'pulse', value: 72, unit: 'bpm', timestamp: '2024-01-01T10:02:00Z'},
             {type: 'steps', value: 8500, unit: 'steps', timestamp: '2024-01-01T10:03:00Z'},
-            {type: 'unknown', value: 100, unit: 'unknown', timestamp: '2024-01-01T10:04:00Z'} // Should pass through
+            {
+                // @ts-expect-error
+                type: 'unknown', value: 100, unit: 'unknown', timestamp: '2024-01-01T10:04:00Z'
+            } // Should pass through
         ];
 
         for (const measurement of testData) {

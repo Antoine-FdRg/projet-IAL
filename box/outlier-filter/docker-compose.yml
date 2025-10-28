@@ -22,10 +22,10 @@ services:
       - MONGO_DATABASE=messagesdb
     networks:
       - nats-network
-      - mongo-network
+      - mongo_mongo-network
+
 networks:
   nats-network:
     driver: bridge
-  mongo-network:
+  mongo_mongo-network:
     external: true
-    name: mongo_default

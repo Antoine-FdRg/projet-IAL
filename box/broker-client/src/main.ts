@@ -123,4 +123,8 @@ export const createRandomMeasurementList = (): RawMeasurement[] => {
 };
 
 
-// main().catch((error) => { console.error(error); process.exit(1); });
+main().catch((error) => {
+  console.error(error);
+  // Tests can't run when using process.iexit
+  // process.exit(1);
+});

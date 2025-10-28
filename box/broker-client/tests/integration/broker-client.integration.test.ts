@@ -8,7 +8,7 @@ import {
   publishMeasurements,
   main
 } from '../../src/main.js';
-import type { MeasurementList } from '../../src/type.js';
+import type { RawMeasurement } from '../../src/type.js';
 
 describe('Broker Client Integration Tests', () => {
   let originalEnv: NodeJS.ProcessEnv;
@@ -105,9 +105,7 @@ describe('Broker Client Integration Tests', () => {
       const connectionOptions = getConnectionOptions();
       const publishQueue = getPublishQueue();
       
-      const testMeasurementList: MeasurementList = {
-        boxId: 'test-box-integration',
-        dataList: [
+      const testMeasurementList: RawMeasurement[] = [
           {
             type: 'temperature',
             value: 23.5,
@@ -120,8 +118,7 @@ describe('Broker Client Integration Tests', () => {
             unit: 'bpm',
             timestamp: new Date().toISOString()
           }
-        ]
-      };
+        ];
 
       // Publish measurements
       await expect(
@@ -143,14 +140,14 @@ describe('Broker Client Integration Tests', () => {
 
         const consumeMessages = async () => {
           try {
-            const iter = await consumer.consume({ max_messages: testMeasurementList.dataList.length });
+            const iter = await consumer.consume({ max_messages: testMeasurementList.length });
             for await (const msg of iter) {
               const data = JSON.parse(msg.data.toString());
               messages.push(data);
               messageCount++;
               msg.ack();
               
-              if (messageCount >= testMeasurementList.dataList.length) {
+              if (messageCount >= testMeasurementList.length) {
                 clearTimeout(timeout);
                 resolve();
                 break;
@@ -167,12 +164,12 @@ describe('Broker Client Integration Tests', () => {
 
       await consumePromise;
 
-      expect(messageCount).toBe(testMeasurementList.dataList.length);
-      expect(messages).toHaveLength(testMeasurementList.dataList.length);
+      expect(messageCount).toBe(testMeasurementList.length);
+      expect(messages).toHaveLength(testMeasurementList.length);
       
       // Verify message content
       messages.forEach((message, index) => {
-        const expectedMeasurement = testMeasurementList.dataList[index];
+        const expectedMeasurement = testMeasurementList[index];
         expect(message.type).toBe(expectedMeasurement?.type);
         expect(message.value).toBe(expectedMeasurement?.value);
         expect(message.unit).toBe(expectedMeasurement?.unit);
@@ -189,10 +186,7 @@ describe('Broker Client Integration Tests', () => {
       const connectionOptions = getConnectionOptions();
       const publishQueue = getPublishQueue();
       
-      const emptyMeasurementList: MeasurementList = {
-        boxId: 'empty-box',
-        dataList: []
-      };
+      const emptyMeasurementList = []
 
       await expect(
         publishMeasurements(connectionOptions, publishQueue, emptyMeasurementList)
@@ -209,10 +203,9 @@ describe('Broker Client Integration Tests', () => {
       const publishQueue = getPublishQueue();
       
       // Generate random measurements
-      const randomMeasurementList = createRandomMeasurementList();
+      const randomMeasurementList: RawMeasurement[] = createRandomMeasurementList();
       
-      expect(randomMeasurementList.dataList).toHaveLength(5);
-      expect(randomMeasurementList.boxId).toMatch(/^box-\d+$/);
+      expect(randomMeasurementList).toHaveLength(5);
 
       // Publish the random measurements
       await expect(
@@ -255,15 +248,14 @@ describe('Broker Client Integration Tests', () => {
         servers: 'nats://nonexistent-server:9999'
       };
       const publishQueue = 'test.queue';
-      const measurementList: MeasurementList = {
-        boxId: 'test-box',
-        dataList: [{
+      const measurementList: RawMeasurement[] = [
+          {
           type: 'temperature',
           value: 20,
           unit: '°C',
           timestamp: new Date().toISOString()
-        }]
-      };
+        }
+      ];
 
       await expect(
         publishMeasurements(invalidOptions, publishQueue, measurementList)
@@ -278,15 +270,14 @@ describe('Broker Client Integration Tests', () => {
 
       const connectionOptions = getConnectionOptions();
       const invalidQueue = ''; // Empty queue name
-      const measurementList: MeasurementList = {
-        boxId: 'test-box',
-        dataList: [{
+      const measurementList: RawMeasurement[] = [
+          {
           type: 'temperature',
           value: 20,
           unit: '°C',
           timestamp: new Date().toISOString()
-        }]
-      };
+        }
+      ];
 
       await expect(
         publishMeasurements(connectionOptions, invalidQueue, measurementList)

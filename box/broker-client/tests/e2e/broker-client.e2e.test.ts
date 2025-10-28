@@ -7,8 +7,8 @@ import type {RawMeasurement} from "../../src/type.js";
 jest.mock('nats', () => ({
     connect: jest.fn(),
     JSONCodec: jest.fn(() => ({
-        encode: jest.fn((data) => JSON.stringify(data)),
-        decode: jest.fn((data) => JSON.parse(data))
+        encode: jest.fn((data: any) => JSON.stringify(data)),
+        decode: jest.fn((data: any) => JSON.parse(data))
     }))
 }));
 
@@ -34,11 +34,14 @@ describe('Broker Client E2E Tests', () => {
 
         // Create mock NATS connection
         mockJs = {
+            // @ts-ignore
             publish: jest.fn().mockResolvedValue(undefined)
         } as any;
 
         mockNc = {
+            // @ts-ignore
             rtt: jest.fn().mockResolvedValue(50),
+            // @ts-ignore
             close: jest.fn().mockResolvedValue(undefined),
             jetstream: jest.fn().mockReturnValue(mockJs)
         } as any;
@@ -210,6 +213,7 @@ describe('Broker Client E2E Tests', () => {
         test('should occasionally generate error measurements', () => {
             // Mock Math.random to force error generation
             const originalRandom = Math.random;
+            // @ts-ignore
             Math.random = jest.fn()
                 .mockReturnValueOnce(0.1) // First call - generate error
                 .mockReturnValueOnce(0.5) // Subsequent calls for normal flow
@@ -226,7 +230,7 @@ describe('Broker Client E2E Tests', () => {
 
     describe('Complete E2E Flow', () => {
         test('should execute main function successfully', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
             await brokerClient.main();
 
