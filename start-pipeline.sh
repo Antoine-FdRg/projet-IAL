@@ -31,6 +31,7 @@ docker-compose -p ial-pipeline \
   -f box/cleaner/docker-compose.yml \
   -f box/outlier-filter/docker-compose.yml \
   -f box/normalizer/docker-compose.yml \
+  -f box/uploader/docker-compose.yml \
   up -d
 
 echo "✅ Pipeline started successfully"
