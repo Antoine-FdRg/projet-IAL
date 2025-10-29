@@ -30,6 +30,11 @@ export async function testConnection(): Promise<void> {
     console.log(`[${new Date().toISOString()}] - Database connected successfully:`, result.rows[0].now);
     client.release();
   } catch (error) {
+    console.log(`[${new Date().toISOString()}] - DB_HOST: ${process.env.DB_HOST}`);
+    console.log(`[${new Date().toISOString()}] - DB_PORT: ${process.env.DB_PORT}`);
+    console.log(`[${new Date().toISOString()}] - DB_NAME: ${process.env.DB_NAME}`);
+    console.log(`[${new Date().toISOString()}] - DB_USER: ${process.env.DB_USER}`);
+    console.log(`[${new Date().toISOString()}] - DB_PASSWORD: ${process.env.DB_PASSWORD}`);
     console.error(`[${new Date().toISOString()}] - Failed to connect to database:`, error);
     throw error;
   }

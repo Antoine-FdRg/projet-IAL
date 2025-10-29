@@ -10,7 +10,7 @@ services:
       - NORMALIZER_CONSUME_QUEUE=MEASUREMENT.to_normalize
       - NORMALIZER_PRODUCER_QUEUE=${NORMALIZER_PRODUCER_QUEUE}
     networks:
-      - nats-network
+      - station-network
 networks:
-  nats-network:
+  station-network:
     driver: bridge

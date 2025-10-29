@@ -148,7 +148,7 @@ docker exec -it ial-measurement-db psql -U ial_user -d measurement_db
 
 ## Intégration avec save-service
 
-Le save-service se connecte à cette base via le réseau Docker `ial-pipeline_default` et utilise :
+Le save-service se connecte à cette base via le réseau Docker `ial-pipeline` et utilise :
 - L'authentification par UUID pour valider les boitiers
 - L'insertion en batch pour optimiser les performances
 - Les index temporels pour des écritures rapides
