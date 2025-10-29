@@ -1,45 +1,40 @@
-import type {RawMeasurement, MeasurementList} from "./type.js";
-// @ts-ignore
+import type {RawMeasurement} from "./type";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 export class NormalizerService {
-    static normalizeMeasurementList(data: Uint8Array<ArrayBufferLike>): MeasurementList | null {
-        return normalizeMeasurementList(data);
+    static normalizeMeasurement(data: Uint8Array<ArrayBufferLike>): RawMeasurement | null {
+        return normalizeMeasurement(data);
     }
 }
 
-const normalizeMeasurementList = (data: Uint8Array<ArrayBufferLike>): MeasurementList | null => {
+const normalizeMeasurement = (data: Uint8Array<ArrayBufferLike>): RawMeasurement | null => {
     try {
         const jsonString = new TextDecoder().decode(data);
-        const rawData = JSON.parse(jsonString) as MeasurementList;
-        if (!rawData.boxId || !Array.isArray(rawData.dataList)) {
-            console.error(`[${new Date().toISOString()}] - Invalid data structure: missing boxId or dataList`);
+        const rawData: RawMeasurement = JSON.parse(jsonString) as RawMeasurement;
+
+        if (!rawData) {
+            console.error(`[${new Date().toISOString()}] - Parsed data is null or undefined`);
             return null;
         }
 
         // Normalize each measurement
-        const normalizedDataList: RawMeasurement[] = rawData.dataList
-            .map(normalizeMeasurement)
-            .filter(measurement => measurement !== null) as RawMeasurement[];
+        const normalizedData: RawMeasurement | null = normalizeMeasurementLogic(rawData);
 
-        if (normalizedDataList.length === 0) {
-            console.error(`[${new Date().toISOString()}] - No valid measurements after normalization`);
+        if (!normalizedData) {
+            console.error(`[${new Date().toISOString()}] - Normalization failed for the measurement data`);
             return null;
         }
 
-        return {
-            boxId: rawData.boxId,
-            dataList: normalizedDataList
-        };
+        return normalizedData;
     } catch (error) {
         console.error(`[${new Date().toISOString()}] - Error parsing measurement data:`, error);
         return null;
     }
 };
 
-const normalizeMeasurement = (measurement: RawMeasurement): RawMeasurement | null => {
+const normalizeMeasurementLogic = (measurement: RawMeasurement): RawMeasurement | null => {
     try {
         // Validate required fields
         if (!measurement.type || !measurement.unit || !measurement.timestamp) {

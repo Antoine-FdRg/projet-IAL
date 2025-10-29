@@ -10,7 +10,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: rootpwd
     volumes:
       - mongo_data:/data/db
-      - ./init/:/docker-entrypoint-initdb.d/:ro
+      - ./init/001-init.js:/docker-entrypoint-initdb.d/001-init.js:ro
+    networks:
+      - mongo-network
 
   mongo-express:
     image: mongo-express:1
@@ -24,6 +26,12 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://root:rootpwd@mongo:27017/
       ME_CONFIG_BASICAUTH_USERNAME: admin
       ME_CONFIG_BASICAUTH_PASSWORD: admin
+    networks:
+      - mongo-network
 
 volumes:
   mongo_data:
+
+networks:
+  mongo-network:
+    driver: bridge

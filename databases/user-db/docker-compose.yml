@@ -1,0 +1,26 @@
+services:
+  userdb:
+    image: postgres:16
+    container_name: userdb
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: userdb
+    ports:
+      - "5432:5432"
+    volumes:
+      # Volume de données persistant
+      - userdb_data:/var/lib/postgresql/data
+      # Scripts d'initialisation (exécutés uniquement au premier démarrage)
+      - ./init_userdb.sql:/docker-entrypoint-initdb.d/01_init_userdb.sql:ro
+      - ./donnees_insert_userdb.sql:/docker-entrypoint-initdb.d/02_donnees_insert_userdb.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d userdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  userdb_data:
+

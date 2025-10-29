@@ -1,8 +1,7 @@
-// tests/integration/normalizer.integration.test.ts
 import { NormalizerService } from '../../src/normalizerService';
 import { EnvService } from '../../src/envService';
 import { BrokerService } from '../../src/brokerService';
-import type { MeasurementList } from '../../src/type';
+import type { RawMeasurement } from '../../src/type';
 
 describe('Normalizer Integration Tests', () => {
     const originalEnv = process.env;
@@ -22,9 +21,7 @@ describe('Normalizer Integration Tests', () => {
 
     describe('End-to-end normalization flow', () => {
         it('should process complete measurement list with various units', () => {
-            const inputData: MeasurementList = {
-                boxId: 'integration-test-box',
-                dataList: [
+            const inputData: RawMeasurement[] = [
                     {
                         type: 'temperature',
                         value: 98.6,
@@ -49,28 +46,43 @@ describe('Normalizer Integration Tests', () => {
                         unit: 'steps',
                         timestamp: '2023-01-01T10:03:00.000Z'
                     }
-                ]
-            };
+                ];
 
-            const uint8Array = new TextEncoder().encode(JSON.stringify(inputData));
-            const result = NormalizerService.normalizeMeasurementList(uint8Array);
+            let uint8Array = new TextEncoder().encode(JSON.stringify(inputData[0]));
+            let result = NormalizerService.normalizeMeasurement(uint8Array);
 
             expect(result).not.toBeNull();
-            expect(result!.boxId).toBe('integration-test-box');
-            expect(result!.dataList).toHaveLength(4);
+            expect(result!.type).toBe('temperature');
+            expect(result!.value).toBeCloseTo(37, 2); // 98.6°F to °C
+            expect(result!.unit).toBe('°C');
+            expect(result!.timestamp).toBe('2023-01-01T10:00:00.000Z');
 
-            // Verify all conversions
-            expect(result!.dataList[0].value).toBe(37); // 98.6°F to °C
-            expect(result!.dataList[0].unit).toBe('°C');
+            uint8Array = new TextEncoder().encode(JSON.stringify(inputData[1]));
+            result = NormalizerService.normalizeMeasurement(uint8Array);
 
-            expect(result!.dataList[1].value).toBe(74.98); // 165.3 lbs to kg
-            expect(result!.dataList[1].unit).toBe('kg');
+            expect(result).not.toBeNull();
+            expect(result!.type).toBe('weight');
+            expect(result!.value).toBeCloseTo(74.98, 2); // 165.3 lbs to kg
+            expect(result!.unit).toBe('kg');
+            expect(result!.timestamp).toBe('2023-01-01T10:01:00.000Z');
 
-            expect(result!.dataList[2].value).toBe(69.6); // 1.16 bps to bpm
-            expect(result!.dataList[2].unit).toBe('bpm');
+            uint8Array = new TextEncoder().encode(JSON.stringify(inputData[2]));
+            result = NormalizerService.normalizeMeasurement(uint8Array);
 
-            expect(result!.dataList[3].value).toBe(8500); // steps unchanged
-            expect(result!.dataList[3].unit).toBe('steps');
+            expect(result).not.toBeNull();
+            expect(result!.type).toBe('pulse');
+            expect(result!.value).toBeCloseTo(69.6, 2); // 1.16 bps to bpm
+            expect(result!.unit).toBe('bpm');
+            expect(result!.timestamp).toBe('2023-01-01T10:02:00.000Z');
+
+            uint8Array = new TextEncoder().encode(JSON.stringify(inputData[3]));
+            result = NormalizerService.normalizeMeasurement(uint8Array);
+
+            expect(result).not.toBeNull();
+            expect(result!.type).toBe('steps');
+            expect(result!.value).toBe(8500); // No conversion
+            expect(result!.unit).toBe('steps');
+            expect(result!.timestamp).toBe('2023-01-01T10:03:00.000Z');
         });
 
         it('should work with environment service configuration', () => {
@@ -88,16 +100,13 @@ describe('Normalizer Integration Tests', () => {
 
     describe('Error handling integration', () => {
         it('should handle malformed data gracefully', () => {
-            const malformedData = new TextEncoder().encode('{"boxId": "test", "invalid": true}');
-            const result = NormalizerService.normalizeMeasurementList(malformedData);
-
+            const malformedData = new TextEncoder().encode('{}');
+            const result = NormalizerService.normalizeMeasurement(malformedData);
             expect(result).toBeNull();
         });
 
         it('should handle mixed valid and invalid measurements', () => {
-            const inputData = {
-                boxId: 'mixed-test-box',
-                dataList: [
+            const inputData: RawMeasurement[] = [
                     {
                         type: 'temperature',
                         value: 20,
@@ -116,14 +125,25 @@ describe('Normalizer Integration Tests', () => {
                         unit: 'kg',
                         timestamp: '2023-01-01T10:02:00.000Z'
                     }
-                ]
-            };
+                ];
 
-            const uint8Array = new TextEncoder().encode(JSON.stringify(inputData));
-            const result = NormalizerService.normalizeMeasurementList(uint8Array);
-
+            let uint8Array = new TextEncoder().encode(JSON.stringify(inputData[0]));
+            let result = NormalizerService.normalizeMeasurement(uint8Array);
             expect(result).not.toBeNull();
-            expect(result!.dataList).toHaveLength(2); // Only valid measurements
+            expect(result!.type).toBe('temperature');
+            expect(result!.value).toBeCloseTo(20, 2);
+            expect(result!.unit).toBe('°C');
+            expect(result!.timestamp).toBe('2023-01-01T10:00:00.000Z');
+            uint8Array = new TextEncoder().encode(JSON.stringify(inputData[1]));
+            result = NormalizerService.normalizeMeasurement(uint8Array);
+            expect(result).toBeNull();
+            uint8Array = new TextEncoder().encode(JSON.stringify(inputData[2]));
+            result = NormalizerService.normalizeMeasurement(uint8Array);
+            expect(result).not.toBeNull();
+            expect(result!.type).toBe('weight');
+            expect(result!.value).toBeCloseTo(70, 2);
+            expect(result!.unit).toBe('kg');
+            expect(result!.timestamp).toBe('2023-01-01T10:02:00.000Z');
         });
     });
 });

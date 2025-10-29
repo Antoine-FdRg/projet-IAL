@@ -1,8 +1,8 @@
 import { connect, consumerOpts, JSONCodec } from "nats";
-import type { MeasurementList } from "./type.js";
-import { CleanService } from "./cleanService.ts";
-import { BrokerService } from "./brokerService.ts";
-import { EnvService } from "./envService.ts";
+import type {RawMeasurement} from "./type.js";
+import { CleanService } from "./cleanService";
+import { BrokerService } from "./brokerService";
+import { EnvService } from "./envService";
 
 
 async function main() {
@@ -22,16 +22,16 @@ async function main() {
   const subscribe = await js.subscribe(consumeQueue, opts);
 
   for await (const message of subscribe) {
-    const cleanList: MeasurementList | null = CleanService.cleanMeasurementList(message.data);
-    if (!cleanList) {
+    const cleanMeasurement: RawMeasurement | null = CleanService.cleanMeasurement(message.data);
+    if (!cleanMeasurement) {
       console.error(`[${new Date().toISOString()}] -  Un message a été ignoré suite à un échec de nettoyage des données.`);
       message.ack();
       continue;
     }
     const producerQueue = EnvService.getProducerQueue();
     const jsonCodec = JSONCodec();
-    await js.publish(producerQueue, jsonCodec.encode(cleanList));
-    console.log(`[${new Date().toISOString()}] - Traitement d'une liste de ${cleanList.dataList.length} mesures du boitier ${cleanList.boxId}`);
+    await js.publish(producerQueue, jsonCodec.encode(cleanMeasurement));
+    console.log(`[${new Date().toISOString()}] - Traitement et envoi de la mesure nettoyée : ${JSON.stringify(cleanMeasurement)}`);
     message.ack();
   }
 

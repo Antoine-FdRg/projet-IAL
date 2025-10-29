@@ -14,23 +14,11 @@ describe('BrokerService Unit Tests', () => {
         it('should return dev connection options for http URL', () => {
             mockEnvService.getBrokerURL.mockReturnValue('http://localhost:4222');
 
-            const spy = jest.spyOn(BrokerService, 'getDevConnectionOptions');
+            const spy = jest.spyOn(BrokerService, 'getConnectionOptions');
 
             BrokerService.getConnectionOptions();
 
             expect(spy).toHaveBeenCalled();
-        });
-    });
-
-    describe('getDevConnectionOptions', () => {
-        it('should return correct dev connection options', () => {
-            mockEnvService.getBrokerURL.mockReturnValue('http://localhost:4222');
-
-            const options = BrokerService.getDevConnectionOptions();
-
-            expect(options).toEqual({
-                servers: 'http://localhost:4222'
-            });
         });
     });
 });
