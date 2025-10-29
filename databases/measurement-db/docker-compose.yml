@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  measurement-db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: ial-measurement-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-measurement_db}
+      POSTGRES_USER: ${POSTGRES_USER:-ial_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ial_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - measurement-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ial-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ial_user} -d ${POSTGRES_DB:-measurement_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  measurement-data:
+    driver: local
+
+networks:
+  ial-network:
+    name: ial-pipeline_default
+    external: true

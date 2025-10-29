@@ -10,6 +10,7 @@ components=(
     "box/cleaner"
     "box/normalizer"
     "box/outlier-filter"
+    "save-service"
 )
 
 build_dir() {
