@@ -22,7 +22,6 @@ docker-compose -p ial-pipeline \
 echo "Stopping measurement database..."
 cd databases/measurement-db && docker-compose down && cd ../..
 
-echo "✅ All services stopped"
 echo "All pipeline services stopped"
 
 echo "Stopping MongoDB..."

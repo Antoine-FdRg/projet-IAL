@@ -267,6 +267,7 @@ ALL_SERVICES=(
     "$PROJECT_ROOT/box/normalizer"
     "$PROJECT_ROOT/box/outlier-filter"
     "$PROJECT_ROOT/box/gatt-server"
+    "$PROJECT_ROOT/save-service"
 )
 
 echo -e "\n${YELLOW}Processing ${BOLD}${#ALL_SERVICES[@]}${NC} ${YELLOW}services with parallel execution...${NC}"
