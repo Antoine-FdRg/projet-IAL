@@ -1,16 +1,14 @@
-version: '3.8'
-
 services:
   measurement-db:
     image: timescale/timescaledb:latest-pg16
-    container_name: ial-measurement-db
+    container_name: measurement-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-measurement_db}
       POSTGRES_USER: ${POSTGRES_USER:-ial_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ial_password}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - measurement-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
