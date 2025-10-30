@@ -1,23 +1,26 @@
-version: '3.8'
-
 services:
   measurement-db:
     image: timescale/timescaledb:latest-pg16
-    container_name: ial-measurement-db
+    container_name: measurement-db
+    hostname: ${MEASUREMENT_DB_HOST_NAME:-measurement-db}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-measurement_db}
-      POSTGRES_USER: ${POSTGRES_USER:-ial_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ial_password}
+      POSTGRES_DB: ${MEASUREMENT_DB_POSTGRES_DB_NAME:-measurement_db}
+      POSTGRES_USER: ${MEASUREMENT_DB_POSTGRES_USER:-ial_user}
+      POSTGRES_PASSWORD: ${MEASUREMENT_DB_POSTGRES_PASSWORD:-ial_password}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${MEASUREMENT_DB_POSTGRES_EXTERNAL_PORT:-5433}:5432"
     volumes:
       - measurement-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - ial-network
+      - cloud-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ial_user} -d ${POSTGRES_DB:-measurement_db}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${MEASUREMENT_DB_POSTGRES_USER:-ial_user} -d ${MEASUREMENT_DB_POSTGRES_DB:-measurement_db}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,6 +30,5 @@ volumes:
     driver: local
 
 networks:
-  ial-network:
-    name: ial-pipeline_default
-    external: true
+  cloud-network:
+    driver: bridge

@@ -9,7 +9,7 @@ services:
       - BOX_PUSH_SCHEDULE_INTERVAL=${BOX_PUSH_SCHEDULE_INTERVAL}
       - BOX_PRODUCER_QUEUE=${BOX_PRODUCER_QUEUE}
     networks:
-      - nats-network
+      - station-network
 networks:
-  nats-network:
+  station-network:
     driver: bridge
