@@ -95,7 +95,16 @@ export class DatabaseService {
 
         try {
             if (compressedMeasurements.length > 0) {
-                await this.collection!.insertMany(compressedMeasurements);
+                // Transform compressed measurements to include required MongoDB fields
+                const documentsToInsert = compressedMeasurements.map(measurement => ({
+                    ...measurement,
+                    messageId: `compressed-${measurement.type}-${measurement.timestamp}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    receivedAt: new Date(),
+                    expireAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Expire après 30 jours
+                    source: 'uploader-compressed'
+                }));
+
+                await this.collection!.insertMany(documentsToInsert);
                 console.log(`[${new Date().toISOString()}] - ${compressedMeasurements.length} mesures comprimées sauvegardées en BDD Buffer`);
             }
         } catch (error) {

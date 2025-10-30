@@ -48,25 +48,15 @@ export async function executeUploadWorkflow(): Promise<void> {
 async function main() {
     try {
         await DatabaseService.connect();
+        await executeUploadWorkflow();
+        await DatabaseService.disconnect();
+        console.log(`[${new Date().toISOString()}] - Workflow terminé, fermeture de la connexion`);
+        process.exit(0);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] - Échec de connexion à MongoDB. Arrêt du service.`);
+        console.error(`[${new Date().toISOString()}] - Erreur dans le service uploader:`, error);
+        await DatabaseService.disconnect();
         process.exit(1);
     }
-
-    await executeUploadWorkflow();
-
-    // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-        console.log(`[${new Date().toISOString()}] - Arrêt en cours...`);
-        await DatabaseService.disconnect();
-        process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-        console.log(`[${new Date().toISOString()}] - Arrêt demandé...`);
-        await DatabaseService.disconnect();
-        process.exit(0);
-    });
 }
 
 main().catch(async (error) => {

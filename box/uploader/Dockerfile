@@ -14,4 +14,7 @@ WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
 
-CMD ["node", "dist/main.js"]
+COPY configuration/scheduler.sh ./scheduler.sh
+RUN chmod +x ./scheduler.sh
+
+CMD ["./scheduler.sh"]

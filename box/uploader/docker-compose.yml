@@ -2,10 +2,8 @@ services:
   uploader:
     image: ial/uploader
     container_name: uploader
-    command: ["node", "dist/main.js"]
     depends_on:
       - setup-broker
-      - mongo
     environment:
       - NATS_SERVER=${NATS_SERVER}
       - MONGO_HOST=mongo
@@ -16,12 +14,14 @@ services:
       - SAVE_SERVICE_URL=${SAVE_SERVICE_URL}
       - BOX_1_UUID=${BOX_1_UUID}
       - BOX_2_UUID=${BOX_2_UUID}
+      - UPLOADER_SCHEDULE_INTERVAL=${UPLOADER_SCHEDULE_INTERVAL}
     networks:
-      - nats-network
-      - mongo_mongo-network
+      - station-network
+      - cloud-network
 
 networks:
-  nats-network:
+  station-network:
     driver: bridge
-  mongo_mongo-network:
+  cloud-network:
     external: true
+    name: ial-cloud_cloud-network

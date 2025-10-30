@@ -25,12 +25,13 @@ fi
 echo "Starting all services..."
 
 docker-compose -p ial-station \
-  --env-file .env.station
+  --env-file .env.station \
   -f box/broker/docker-compose.yml \
   -f box/broker-client/docker-compose.yml \
   -f box/cleaner/docker-compose.yml \
   -f box/outlier-filter/docker-compose.yml \
   -f box/normalizer/docker-compose.yml \
+  -f box/uploader/docker-compose.yml \
   up -d
 
 echo "✅ Station started successfully"

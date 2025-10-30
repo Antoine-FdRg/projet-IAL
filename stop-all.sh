@@ -2,31 +2,25 @@
 
 echo "🛑 Stopping all services..."
 
-# Stop save service
-echo "Stopping save service..."
-cd save-service && docker-compose down && cd ..
-
-# Stop pipeline services
 echo "Stopping pipeline services..."
-docker-compose -p ial-pipeline \
-               --env-file .env.docker \
-               --env-file .env.queues \
+docker-compose -p ial-station \
+               --env-file .env.station \
+               --file box/infra/mongo/docker-compose.yml \
                --file box/broker/docker-compose.yml \
                --file box/broker-client/docker-compose.yml \
                --file box/cleaner/docker-compose.yml \
                --file box/outlier-filter/docker-compose.yml \
                --file box/uploader/docker-compose.yml \
-               --file databases/user-db/docker-compose.yml \
                --file box/normalizer/docker-compose.yml down -v
 
-# Stop measurement database
-echo "Stopping measurement database..."
-cd databases/measurement-db && docker-compose down && cd ../..
+echo "All box services stopped"
 
-echo "All pipeline services stopped"
+echo "Stopping cloud services"
+docker-compose -p ial-cloud \
+               --env-file .env.cloud \
+               -f databases/user-db/docker-compose.yml \
+               -f databases/measurement-db/docker-compose.yml \
+               -f save-service/docker-compose.yml down -v
+echo "Cloud services stopped"
 
-echo "Stopping MongoDB..."
-
-docker-compose -f box/infra/mongo/docker-compose.yml down -v
-
-echo "MongoDB stopped successfully"
+echo "✅ All services stopped successfully"
