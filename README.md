@@ -7,22 +7,43 @@ Le fichier `.env.docker` à la racine du projet contient les variables d'environ
 - BOX_PUSH_SCHEDULE_INTERVAL : L'intervalle de push des données depuis le boitier (box) vers le broker NATS en millisecondes.
 
 ## Démarrage
-### Construire toutes les images docker
+### 1. Construire toutes les images docker
 Dans un git bash ou wsl :
 ```bash
 ./build-all.sh
 ```
 Ce script construit tous les services de la pipeline NATS (`box/*`) ainsi que le `save-service`.
 
-### Démarrer la pipeline complète
+### 2. Démarrer les services cloud
 Dans un git bash ou wsl :
 ```bash
-./start-pipeline.sh
+./start-cloud.sh
 ```
-Ce script démarre :
-1. La base de données TimescaleDB (`databases/measurement-db`)
-2. Tous les services de la pipeline NATS
-3. Le save-service (API HTTP)
+Ce script démarre le projet docker compose `ial-cloud` et le network `cloud_network` permettant la communication entre l'ensemble des services cloud :
+- le Save Service
+- la Measurement DB
+- la User DB
+- l'Analyse Service
+- le Family Notif Service
+
+En lançant le docker compose de save-service, le réseau `internet_network` est créé pour permettre la communication entre l'uploader de la station et le save-service cloud. Il est donc essentiel de démarrer le cloud avant la station.
+
+### 3. Démarrer les services de la station
+**⚠️ Attention** : Il est impératif d'avoir démarré les services cloud avant de lancer la station pour que l'uploader puisse se connecter au save-service.
+
+Dans un git bash ou wsl :
+```bash
+./start-station.sh
+```
+Ce script démarre le projet docker compose `ial-station` et le network `station_network` permettant la communication entre l'ensemble des services de la station :
+- Le serveur BLE
+- Le broker NATS
+- le Cleaner
+- le Normalizer
+- l'Outlier filter
+- la Buffer DB
+- l'Uploader
+
 
 ### Arrêter tous les services
 ```bash
