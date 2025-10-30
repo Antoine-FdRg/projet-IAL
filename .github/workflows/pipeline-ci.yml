@@ -50,6 +50,7 @@ jobs:
           - box/cleaner
           - box/normalizer
           - box/outlier-filter
+          - box/uploader
           - save-service
     steps:
       - name: Checkout repository
