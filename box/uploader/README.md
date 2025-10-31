@@ -1,12 +1,12 @@
-# Uploader Service
+# Service Uploader
 
-## Overview
+## Aperçu
 
-The Uploader service is a TypeScript-based microservice that processes health measurement data from a MongoDB buffer database, compresses it by averaging values by measurement type, and uploads the compressed data to a save service.
+Le service Uploader est un microservice basé sur TypeScript qui traite les données de mesures de santé depuis une base de données buffer MongoDB, les compresse en moyennant les valeurs par type de mesure, et upload les données compressées vers un service de sauvegarde.
 
 ## Architecture
 
-The service follows a clean architecture pattern with the following workflow:
+Le service suit un pattern d'architecture propre avec le workflow suivant :
 
 ```mermaid
 flowchart TB
@@ -34,16 +34,44 @@ classDef pink fill:#F8BBD0,stroke:#C2185B,stroke-width:2px;
 classDef purple fill:#E1BEE7,stroke:#8E24AA,stroke-width:2px;
 ```
 
-## Features
+### Fonctionnement
 
-- **Data Compression**: Groups measurements by type (temperature, pulse, weight, steps) and calculates average values
-- **Resilient Upload**: Handles save service failures by storing compressed data locally
-- **Authentication**: Uses box UUID for service authentication
-- **MongoDB Integration**: Reads from and manages a MongoDB buffer database
-- **Error Handling**: Comprehensive error handling with timestamped logging
-- **Graceful Shutdown**: Handles SIGINT and SIGTERM signals properly
+1. **Démarrage** : Connexion à la base de données buffer MongoDB
+2. **Récupération des données** : Lecture de toutes les mesures depuis la base de données buffer
+3. **Compression** : Regroupement des mesures par type et calcul des moyennes
+4. **Tentative d'upload** : Envoi des données compressées vers le service de sauvegarde avec authentification par UUID de la station
+5. **Chemin de succès** : Purge de la base de données buffer
+6. **Chemin d'échec** : Purge des données originales, stockage des données compressées pour un nouvel essai
+7. **Arrêt** : Gestion propre de la déconnexion sur les signaux SIGINT/SIGTERM
 
-## Data Types
+## Installation
+
+1. Installer les dépendances :
+```bash
+npm install
+```
+
+2. Configurer les variables d'environnement (copier `.env.example` vers `.env` et configurer) :
+```bash
+cp .env.example .env
+# Éditer .env avec votre configuration
+```
+
+3. Construire le projet :
+```bash
+npm run build
+```
+
+## Fonctionnalités
+
+- **Compression de données** : Regroupe les mesures par type (température, pouls, poids, pas) et calcule les valeurs moyennes
+- **Upload résilient** : Gère les échecs du service de sauvegarde en stockant les données compressées localement
+- **Authentification** : Utilise l'UUID de la box pour l'authentification du service
+- **Intégration MongoDB** : Lit et gère une base de données buffer MongoDB
+- **Gestion d'erreurs** : Gestion d'erreurs complète avec logging horodaté
+- **Arrêt propre** : Gère les signaux SIGINT et SIGTERM correctement
+
+## Types de données
 
 ### RawMeasurement
 ```typescript
@@ -66,73 +94,54 @@ type MeasurementListDTO = {
 ## Services
 
 ### DatabaseService
-Manages MongoDB connections and operations:
-- `connect()`: Establishes database connection
-- `disconnect()`: Closes database connection
-- `getAllMeasurementsCollection()`: Retrieves all measurements from buffer
-- `removeAllMeasurementsCollection()`: Clears all measurements from buffer
-- `saveCompressedMeasurements()`: Stores compressed measurements back to buffer
+Gère les connexions et opérations MongoDB :
+- `connect()` : Établit la connexion à la base de données
+- `disconnect()` : Ferme la connexion à la base de données
+- `getAllMeasurementsCollection()` : Récupère toutes les mesures depuis le buffer
+- `removeAllMeasurementsCollection()` : Efface toutes les mesures du buffer
+- `saveCompressedMeasurements()` : Stocke les mesures compressées dans le buffer
 
 ### CompressionService
-Handles data compression logic:
-- `compressMeasurements()`: Groups measurements by type and calculates averages
-- Groups measurements by type (temperature, pulse, weight, steps)
-- Computes average values for each measurement type
-- Preserves unit information and uses earliest timestamp
+Gère la logique de compression des données :
+- `compressMeasurements()` : Regroupe les mesures par type et calcule les moyennes
+- Regroupe les mesures par type (température, pouls, poids, pas)
+- Calcule les valeurs moyennes pour chaque type de mesure
+- Préserve les informations d'unité et utilise le timestamp le plus ancien
 
 ### SaveServiceClient
-Manages communication with the save service:
-- `sendCompressedMeasurements()`: Sends compressed data to save service
-- Includes box UUID authentication
-- Returns success/failure status for workflow decisions
+Gère la communication avec le service de sauvegarde :
+- `sendCompressedMeasurements()` : Envoie les données compressées au service de sauvegarde
+- Inclut l'authentification par UUID de box
+- Retourne le statut de succès/échec pour les décisions de workflow
 
 ### EnvService
-Manages environment configuration:
-- MongoDB connection parameters
-- Save service URL configuration
-- Box UUID management (randomly selects between BOX_1_UUID and BOX_2_UUID)
+Gère la configuration d'environnement :
+- Paramètres de connexion MongoDB
+- Configuration de l'URL du service de sauvegarde
+- Gestion de l'UUID de la station pour l'authentification
 
-## Environment Variables
+## Variables d'environnement
 
-### Required Variables
+### Variables requises
 
 ```bash
-# MongoDB Configuration
+# Configuration MongoDB
 MONGO_HOST=localhost
 MONGO_PORT=27017
 MONGO_USERNAME=your_mongo_user
 MONGO_PASSWORD=your_mongo_password
 MONGO_DATABASE=your_database_name
 
-# Save Service Configuration
+# Configuration du service de sauvegarde
 SAVE_SERVICE_URL=http://save-service:3000
 
-# Box Authentication
-BOX_1_UUID=box-uuid-1
-BOX_2_UUID=box-uuid-2
+# Authentification de la station
+BOX_UUID=box-uuid-1
 ```
 
-## Installation
+## Utilisation
 
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Set up environment variables (copy `.env.example` to `.env` and configure):
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. Build the project:
-```bash
-npm run build
-```
-
-## Usage
-
-### Development
+### Développement
 ```bash
 npm start
 ```
@@ -145,58 +154,48 @@ node dist/main.js
 
 ### Docker
 ```bash
-# Build Docker image
+# Construire l'image Docker
 docker build -t uploader .
 
-# Run with docker-compose
+# Exécuter avec docker-compose
 docker-compose up
 ```
 
-## Testing
+## Tests
 
-The project includes comprehensive test coverage:
+Le projet inclut une couverture de tests complète :
 
-### Unit Tests
+### Tests unitaires
 ```bash
 npm run test:unit
 ```
-Tests individual services in isolation with mocked dependencies.
+Teste les services individuels en isolation avec des dépendances mockées.
 
-### Integration Tests
+### Tests d'intégration
 ```bash
 npm run test:integration
 ```
-Tests interaction between multiple services and workflow logic.
+Teste l'interaction entre plusieurs services et la logique de workflow.
 
-### E2E Tests
+### Tests E2E
 ```bash
 npm run test:e2e
 ```
-Tests complete application workflow including database and HTTP interactions.
+Teste le workflow complet de l'application incluant les interactions avec la base de données et HTTP.
 
-### All Tests
+### Tous les tests
 ```bash
 npm test
 ```
 
-### Test Coverage
+### Couverture de tests
 ```bash
 npm run test:coverage
 ```
 
-## Workflow Logic
+## Intégration API
 
-1. **Startup**: Connect to MongoDB buffer database
-2. **Data Retrieval**: Read all measurements from buffer database
-3. **Compression**: Group measurements by type and calculate averages
-4. **Upload Attempt**: Send compressed data to save service with box authentication
-5. **Success Path**: Clear buffer database
-6. **Failure Path**: Clear original data, store compressed data for retry
-7. **Shutdown**: Handle graceful disconnection on SIGINT/SIGTERM
-
-## API Integration
-
-### Save Service Endpoint
+### Endpoint du service de sauvegarde
 ```
 POST /measurements
 Authorization: Bearer {boxId}
@@ -215,22 +214,22 @@ Content-Type: application/json
 }
 ```
 
-## Error Handling
+## Gestion d'erreurs
 
-- **Database Connection Failures**: Service exits with error code 1
-- **Save Service Failures**: Compressed data stored locally for retry
-- **Compression Errors**: Logged with timestamps for debugging
-- **Network Errors**: Gracefully handled with fallback storage
+- **Échecs de connexion à la base de données** : Le service se ferme avec le code d'erreur 1
+- **Échecs du service de sauvegarde** : Les données compressées sont stockées localement pour un nouvel essai
+- **Erreurs de compression** : Loggées avec timestamps pour le débogage
+- **Erreurs réseau** : Gérées proprement avec stockage de secours
 
 ## Logging
 
-All operations are logged with ISO timestamps in French:
-- Connection status
-- Data processing steps
-- Upload results
-- Error conditions
+Toutes les opérations sont loggées avec des timestamps ISO en français :
+- Statut de connexion
+- Étapes de traitement des données
+- Résultats d'upload
+- Conditions d'erreur
 
-Example log output:
+Exemple de sortie de log :
 ```
 [2024-01-01T10:00:00.000Z] - Démarrage du workflow d'upload
 [2024-01-01T10:00:01.000Z] - Lecture des mesures de la BDD Buffer...
@@ -243,29 +242,27 @@ Example log output:
 [2024-01-01T10:00:08.000Z] - Workflow d'upload terminé
 ```
 
-## Development
+## Développement
 
-### Project Structure
+### Structure du projet
 ```
 src/
-├── main.ts                 # Application entry point and workflow orchestration
-├── type.ts                 # TypeScript type definitions
-├── databaseService.ts      # MongoDB operations
-├── compressionService.ts   # Data compression logic
-├── saveServiceClient.ts    # HTTP client for save service
-└── envService.ts          # Environment configuration
+├── main.ts                 # Point d'entrée de l'application et orchestration du workflow
+├── type.ts                 # Définitions de types TypeScript
+├── databaseService.ts      # Opérations MongoDB
+├── compressionService.ts   # Logique de compression des données
+├── saveServiceClient.ts    # Client HTTP pour le service de sauvegarde
+└── envService.ts          # Configuration d'environnement
 
 tests/
-├── setup.ts               # Test configuration
-├── unit/                  # Unit tests
-├── integration/           # Integration tests
-└── e2e/                   # End-to-end tests
+├── setup.ts               # Configuration des tests
+├── unit/                  # Tests unitaires
+├── integration/           # Tests d'intégration
+└── e2e/                   # Tests end-to-end
 ```
 
-### Code Quality
-- TypeScript with strict type checking
-- Jest for testing with 100% coverage goal
-- ESLint and Prettier for code formatting
-- Comprehensive error handling
-
-
+### Qualité du code
+- TypeScript avec vérification stricte des types
+- Jest pour les tests avec objectif de couverture 100%
+- ESLint et Prettier pour le formatage du code
+- Gestion d'erreurs complète

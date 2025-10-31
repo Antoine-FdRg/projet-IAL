@@ -16,8 +16,7 @@ process.env.MONGO_USERNAME = 'test_user';
 process.env.MONGO_PASSWORD = 'test_password';
 process.env.MONGO_DATABASE = 'test_db';
 process.env.SAVE_SERVICE_URL = 'http://localhost:3000';
-process.env.BOX_1_UUID = 'test-box-1-uuid';
-process.env.BOX_2_UUID = 'test-box-2-uuid';
+process.env.BOX_UUID = 'test-box-1-uuid';
 
 // Mock fetch globally
 // @ts-ignore

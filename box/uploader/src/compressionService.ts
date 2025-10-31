@@ -47,7 +47,12 @@ export class CompressionService {
         const timestamps = measurements.map(m => new Date(m.timestamp).getTime()).sort((a, b) => a - b);
 
         const sum = values.reduce((acc, val) => acc + val, 0);
-        const averageValue = sum / values.length;
+        let averageValue = sum / values.length;
+
+        // If the type is 'steps', we want the total sum instead of the average
+        if (type === 'steps') {
+            averageValue = sum;
+        }
 
         return {
             type,

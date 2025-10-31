@@ -85,33 +85,18 @@ describe('EnvService', () => {
   });
 
   describe('getBoxId', () => {
-    it('should return one of the box UUIDs when both are set', () => {
-      process.env.BOX_1_UUID = 'box-1-uuid';
-      process.env.BOX_2_UUID = 'box-2-uuid';
+    it('should return BOX_UUID when environment variable is set', () => {
+      process.env.BOX_UUID = 'box-1-uuid';
 
       const boxId = EnvService.getBoxId();
-      expect(['box-1-uuid', 'box-2-uuid']).toContain(boxId);
+      expect(boxId).toBe('box-1-uuid');
     });
 
-    it('should throw error when BOX_1_UUID is not set', () => {
-      delete process.env.BOX_1_UUID;
-      process.env.BOX_2_UUID = 'box-2-uuid';
+    it('should throw error when BOX_UUID is not set', () => {
+      delete process.env.BOX_UUID;
+      process.env.BOX_UUID = 'box-2-uuid';
 
-      expect(() => EnvService.getBoxId()).toThrow('Veuillez définir les variables d\'environnement BOX_1_UUID et BOX_2_UUID');
-    });
-
-    it('should throw error when BOX_2_UUID is not set', () => {
-      process.env.BOX_1_UUID = 'box-1-uuid';
-      delete process.env.BOX_2_UUID;
-
-      expect(() => EnvService.getBoxId()).toThrow('Veuillez définir les variables d\'environnement BOX_1_UUID et BOX_2_UUID');
-    });
-
-    it('should throw error when both BOX UUIDs are not set', () => {
-      delete process.env.BOX_1_UUID;
-      delete process.env.BOX_2_UUID;
-
-      expect(() => EnvService.getBoxId()).toThrow('Veuillez définir les variables d\'environnement BOX_1_UUID et BOX_2_UUID');
+      expect(() => EnvService.getBoxId()).toThrow('Veuillez définir la variable d\'environnement BOX_UUID');
     });
   });
 });

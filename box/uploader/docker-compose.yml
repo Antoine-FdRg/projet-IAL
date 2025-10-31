@@ -12,8 +12,7 @@ services:
       - MONGO_PASSWORD=root
       - MONGO_DATABASE=messagesdb
       - SAVE_SERVICE_URL=${SAVE_SERVICE_URL}
-      - BOX_1_UUID=${BOX_1_UUID}
-      - BOX_2_UUID=${BOX_2_UUID}
+      - BOX_UUID=550e8400-e29b-41d4-a716-446655440001
       - UPLOADER_SCHEDULE_INTERVAL=${UPLOADER_SCHEDULE_INTERVAL}
     networks:
       - station-network

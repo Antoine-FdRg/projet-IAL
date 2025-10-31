@@ -47,9 +47,9 @@ export class EnvService {
     }
 
     static getBoxId() {
-        if (!process.env.BOX_1_UUID || !process.env.BOX_2_UUID) {
-            throw new Error(`[${new Date().toISOString()}] - Veuillez définir les variables d'environnement BOX_1_UUID et BOX_2_UUID`);
+        if (!process.env.BOX_UUID) {
+            throw new Error(`[${new Date().toISOString()}] - Veuillez définir la variable d'environnement BOX_UUID`);
         }
-        return Math.random() < 0.5 ? process.env.BOX_1_UUID : process.env.BOX_2_UUID;
+        return process.env.BOX_UUID;
     }
 }
