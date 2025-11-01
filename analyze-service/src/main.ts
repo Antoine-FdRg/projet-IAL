@@ -1,81 +1,49 @@
-import { createNotificationClient, testConnection } from './database/connection.js';
-import { MeasurementRepository } from './database/measurementRepository.js';
-import { AnalysisService } from './services/analysisService.js';
-import type { MeasurementNotification } from './types.js';
+import express from 'express';
+import dotenv from 'dotenv';
+import analyzeRoutes from './routes/analyzeRoutes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { testConnection } from './database/connection.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
 
 /**
- * Main entry point for the analyze service
- * Sets up PostgreSQL LISTEN/NOTIFY for real-time measurement analysis
+ * Initialize the Express server
  */
 async function main() {
   try {
-    // Initialize service
-    await AnalysisService.initialize();
-
     // Test database connection
+    console.log(`[${new Date().toISOString()}] - 🚀 Analyze Service Starting...`);
+    console.log(`[${new Date().toISOString()}] - 📊 REST API for health anomaly analysis`);
+
     const connected = await testConnection();
     if (!connected) {
       throw new Error('Failed to connect to database');
     }
 
-    // Create dedicated client for LISTEN/NOTIFY
-    const notificationClient = await createNotificationClient();
+    // Middleware
+    app.use(express.json());
 
-    console.log(
-      `[${new Date().toISOString()}] - 👂 Setting up LISTEN on 'new_measurement' channel...`
-    );
-
-    // Set up notification handler
-    notificationClient.on('notification', async (msg) => {
-      if (msg.channel === 'new_measurement') {
-        try {
-          const notification: MeasurementNotification = JSON.parse(msg.payload || '{}');
-
-          console.log(
-            `[${new Date().toISOString()}] - 📨 Received notification for measurement ID: ${notification.id}`
-          );
-
-          // Fetch full measurement from database
-          const measurement = await MeasurementRepository.getById(notification.id);
-
-          if (!measurement) {
-            console.error(
-              `[${new Date().toISOString()}] - ❌ Measurement ${notification.id} not found in database`
-            );
-            return;
-          }
-
-          // Analyze the measurement
-          await AnalysisService.analyzeMeasurement(measurement);
-        } catch (error) {
-          console.error(
-            `[${new Date().toISOString()}] - ❌ Error processing notification:`,
-            error
-          );
-        }
-      }
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+      res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
     });
 
-    // Start listening
-    await notificationClient.query('LISTEN new_measurement');
+    // Analysis routes
+    app.use('/analyse', analyzeRoutes);
 
-    console.log(`[${new Date().toISOString()}] - ✅ Analyze service is now listening for new measurements`);
-    console.log(`[${new Date().toISOString()}] - 🔔 Waiting for notifications...`);
-    console.log('');
+    // Error handler (must be last)
+    app.use(errorHandler);
 
-    // Keep the process running
-    process.on('SIGINT', async () => {
-      console.log(`\n[${new Date().toISOString()}] - 🛑 Shutting down gracefully...`);
-      await notificationClient.query('UNLISTEN new_measurement');
-      notificationClient.release();
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      console.log(`\n[${new Date().toISOString()}] - 🛑 Shutting down gracefully...`);
-      await notificationClient.query('UNLISTEN new_measurement');
-      notificationClient.release();
-      process.exit(0);
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`[${new Date().toISOString()}] - ✅ Analyze service listening on port ${PORT}`);
+      console.log(`[${new Date().toISOString()}] - 📍 Endpoints:`);
+      console.log(`[${new Date().toISOString()}] -    GET /health`);
+      console.log(`[${new Date().toISOString()}] -    GET /analyse/:stationId/family`);
+      console.log(`[${new Date().toISOString()}] -    GET /analyse/:stationId/doctor`);
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] - ❌ Fatal error:`, error);

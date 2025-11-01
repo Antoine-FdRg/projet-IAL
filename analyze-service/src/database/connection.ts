@@ -32,21 +32,6 @@ console.log(`[${new Date().toISOString()}] - Database pool configured for ${pool
 export default pool;
 
 /**
- * Create a dedicated client for LISTEN/NOTIFY
- * This client must remain connected to receive notifications
- */
-export async function createNotificationClient(): Promise<pg.PoolClient> {
-  const client = await pool.connect();
-  console.log(`[${new Date().toISOString()}] - Notification client connected`);
-
-  client.on('error', (err) => {
-    console.error(`[${new Date().toISOString()}] - Notification client error:`, err);
-  });
-
-  return client;
-}
-
-/**
  * Test database connection
  */
 export async function testConnection(): Promise<boolean> {

@@ -1,7 +1,7 @@
 {
   "name": "analyze-service",
   "version": "1.0.0",
-  "description": "Real-time health anomaly detection service for IoT measurements",
+  "description": "REST API for health anomaly analysis for IoT measurements",
   "main": "src/main.ts",
   "scripts": {
     "start": "npx tsx src/main.ts",
@@ -20,8 +20,10 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@types/express": "^4.17.21",
     "@types/node": "^24.8.0",
     "dotenv": "^17.2.3",
+    "express": "^4.18.2",
     "pg": "^8.11.3",
     "typescript": "^5.9.3"
   },

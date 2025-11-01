@@ -29,18 +29,6 @@ export interface Measurement {
 }
 
 /**
- * PostgreSQL NOTIFY payload
- */
-export interface MeasurementNotification {
-  id: number;
-  box_id: string;
-  measurement_type: MeasurementType;
-  value: number;
-  unit: string;
-  timestamp: string;
-}
-
-/**
  * Historical statistics for a measurement type
  */
 export interface MeasurementStats {
@@ -70,24 +58,39 @@ export interface AnomalyResult {
 }
 
 /**
- * Alert to be displayed/sent
+ * Family analysis state
  */
-export interface Alert {
-  timestamp: Date;
-  box_id: string;
-  measurement_type: MeasurementType;
-  current_value: number;
-  unit: string;
-  anomaly_type: AnomalyType;
-  severity: SeverityLevel;
+export type FamilyState = 'great' | 'okay' | 'bad' | 'terrible';
+
+/**
+ * Family analysis result DTO
+ */
+export interface FamilyAnalyseResultDTO {
+  state: FamilyState;
   message: string;
-  context: {
-    avg_1h?: number;
-    variation?: string;
-    trend?: string;
-    [key: string]: any;
-  };
-  recommendation: string;
+}
+
+/**
+ * Doctor analysis severity
+ */
+export type DoctorSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+/**
+ * Doctor analysis result DTO
+ */
+export interface DoctorAnalyseResultDTO {
+  severity: DoctorSeverity;
+  reason: string | null;
+}
+
+/**
+ * Box entity from database
+ */
+export interface Box {
+  box_id: string;
+  description?: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 /**
