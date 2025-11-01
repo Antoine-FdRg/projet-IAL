@@ -1,0 +1,22 @@
+services:
+  gatt-server:
+      build: ../../box/gatt-server
+      restart: always
+      env_file:
+        - ../../box/gatt-server/.env
+      ports:
+        - "3000:3000"
+      networks:
+      - nats-network
+
+  mock-watch:
+      build: .
+      container_name: mock-watch
+      restart: always
+      env_file:
+        - .env  
+      tty: true
+
+networks:
+  nats-network:
+    driver: bridge
