@@ -37,7 +37,7 @@ Le service dépend de deux variables principales :
 | -------------------- | ------------------------------------------------ | ----------------------- |
 | `NATS_SERVER`        | Adresse du serveur NATS (ex: `nats://nats:4222`) | `nats://localhost:4222` |
 | `BOX_PRODUCER_QUEUE` | Nom du sujet NATS où publier les messages        | `measurements.watch1`   |
-| `PORT` _(optionnel)_ | Port HTTP local                                  | `3000`                  |
+| `PORT` _(optionnel)_ | Port HTTP local                                  | `2000`                  |
 
 ---
 

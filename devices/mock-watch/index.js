@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-const ENDPOINT_URL = process.env.ENDPOINT_URL || 'http://localhost:3000/ingest';
+const ENDPOINT_URL = process.env.ENDPOINT_URL || 'http://localhost:2000/ingest';
 const OTHERS_INTERVAL_MS = Number(process.env.SEND_INTERVAL_MS || 30000); 
 const PULSE_INTERVAL_MS = Number(process.env.PULSE_INTERVAL_MS || 5000);   
 const SOURCE_ID = process.env.SOURCE_ID || 'mock-watch-1';

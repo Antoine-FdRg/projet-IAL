@@ -37,7 +37,7 @@ Il permet de tester une architecture IoT sans matériel réel.
 Le fichier `.env` contient les paramètres principaux du simulateur :
 
 ```bash
-ENDPOINT_URL=http://gatt-server:3000/ingest  # URL de réception des mesures
+ENDPOINT_URL=http://gatt-server:2000/ingest  # URL de réception des mesures
 PULSE_INTERVAL_MS=5000                       # Intervalle d’envoi du pouls (ms)
 SEND_INTERVAL_MS=30000                       # Intervalle des autres mesures (ms)
 INIT_WEIGHT_KG=70.5                          # Poids initial du profil simulé
@@ -116,7 +116,7 @@ Lors de l’exécution, le simulateur affiche :
 ▶ Mock Watch — mock-watch-1
    • Pulse toutes 5s
    • Temp/Weight/Steps toutes 30s
-   → http://gatt-server:3000/ingest
+   → http://gatt-server:2000/ingest
 [OK] pulse -> 78 bpm | Accepted
 [SIM ERR] Bluetooth connection lost @ 2025-11-01T09:22:12.301Z (non envoyé)
 [OK] temperature -> 22.15 °C | Accepted
@@ -128,4 +128,4 @@ Lors de l’exécution, le simulateur affiche :
 
 - Tu peux modifier les intervalles ou le poids initial dans `.env` pour simuler d’autres conditions.
 - Pour tester plusieurs montres, crée plusieurs `.env` et conteneurs avec des `SOURCE_ID` différents.
-- Si ton backend est en local, change simplement `ENDPOINT_URL` en `http://localhost:3000/ingest`.
+- Si ton backend est en local, change simplement `ENDPOINT_URL` en `http://localhost:2000/ingest`.
