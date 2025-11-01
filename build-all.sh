@@ -13,6 +13,8 @@ components=(
     "box/uploader"
     "save-service"
     "analyze-service"
+    "box/gatt-server"
+    "devices/mock-watch"
 )
 
 build_dir() {

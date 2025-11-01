@@ -1,0 +1,20 @@
+services:
+  gatt-server:
+      image: ial/gatt-server
+      container_name: gatt-server
+      restart: always
+      environment:
+        - GATT_SERVER_PORT=${GATT_SERVER_PORT}
+        - NATS_SERVER=${NATS_SERVER}
+        - BOX_PRODUCER_QUEUE=${BOX_PRODUCER_QUEUE}
+      ports:
+        - ${GATT_SERVER_PORT}:${GATT_SERVER_PORT}
+      networks:
+      - station-network
+      - home-network
+
+networks:
+  station-network:
+    driver: bridge
+  home-network:
+    driver: bridge

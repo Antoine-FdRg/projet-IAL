@@ -3,8 +3,6 @@ services:
     image: nats:latest
     hostname: nats-broker
     container_name: nats-broker
-    ports:
-      - 4222:4222
     command: ["-js"]
     networks:
       - station-network

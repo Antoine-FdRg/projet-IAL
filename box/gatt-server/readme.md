@@ -1,120 +1,133 @@
-# 📦 Box – MongoDB + GATT Server (REST Version)
+# 🩺 IoT Ingest Server (Montre Connectée)
 
-Ce dépôt contient l’infrastructure et le code d’un système complet permettant de :
-
-- Héberger une base **MongoDB** (via Docker) pour stocker des messages JSON entrants.
-- Démarrer un **serveur Node.js/TypeScript** (REST) connecté à cette base.
-- Enregistrer et consulter les messages reçus depuis des sources externes (capteurs, boîtiers, etc.).
+Ce projet fournit un petit serveur Node.js permettant de **recevoir, valider et publier des mesures IoT** (température, poids, pouls, etc.) vers **NATS JetStream**.  
+L’image de ce service est intégrée dans le **docker-compose de la montre connectée**.
 
 ---
 
-## 📁 Arborescence
+## 🚀 Fonctionnalités
+
+- **Endpoint HTTP** `/ingest` pour recevoir des mesures depuis un appareil (POST JSON).
+- **Validation des données** avec `zod` pour garantir le format correct.
+- **Publication automatique** des mesures dans une file **NATS JetStream**.
+- **Endpoint de santé** `/health` pour vérifier que le service fonctionne.
+
+---
+
+## 📁 Structure du projet
 
 ```
-box/
-  infra/
-    mongo/
-      init/
-        001-init.js           # Script d’initialisation de la base
-      docker-compose.yml      # Conteneur MongoDB + Mongo Express
-  gatt-server/
-    src/
-      db.js                   # Connexion Mongoose
-      models/
-        Message.ts            # Schéma Mongoose pour les messages
-      index.ts                # Exemple de bootstrap (sans BLE)
-    .env                      # URI MongoDB
-    package.json
-    tsconfig.json
-  README.md
+.
+├── Dockerfile              # Image Node.js utilisée dans le docker-compose de la montre
+├── build.sh                # Script de build Docker
+├── index.ts                # Point d’entrée principal du serveur
+├── lib/
+│   └── nats.js             # Connexion et publication NATS JetStream
+├── routes/
+│   └── ingest.js           # Route principale pour les mesures
 ```
 
 ---
 
-## 🚀 Démarrage rapide
+## ⚙️ Variables d’environnement
 
-### 1️⃣ Prérequis
+Le service dépend de deux variables principales :
 
-- 🐋 **Docker Desktop** (Windows/macOS/Linux)
-- 🟢 **Node.js ≥ 18** + **npm**
-- (Optionnel) `mongosh` pour interagir directement avec la base.
+| Variable             | Description                                      | Exemple                 |
+| -------------------- | ------------------------------------------------ | ----------------------- |
+| `NATS_SERVER`        | Adresse du serveur NATS (ex: `nats://nats:4222`) | `nats://localhost:4222` |
+| `BOX_PRODUCER_QUEUE` | Nom du sujet NATS où publier les messages        | `measurements.watch1`   |
+| `PORT` _(optionnel)_ | Port HTTP local                                  | `2000`                  |
 
 ---
 
-### 2️⃣ Lancer l’infrastructure MongoDB
+## 🧠 Exemple de corps JSON attendu
 
-Depuis le dossier :
+```json
+{
+  "payload": {
+    "type": "temperature",
+    "value": 36.8,
+    "unit": "°C",
+    "timestamp": "2025-11-01T10:45:00Z"
+  },
+  "source": "mock-watch-1",
+  "type": "watch"
+}
+```
+
+---
+
+## 📡 Exemple de requête cURL
 
 ```bash
-cd box/infra/mongo
-docker compose up -d
+curl -X POST http://localhost:3000/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+        "payload": {"type": "pulse", "value": 80, "unit": "bpm"},
+        "source": "mock-watch-1",
+        "type": "watch"
+      }'
 ```
 
-📍 Accès :
+Réponse attendue :
 
-- **MongoDB** → `mongodb://localhost:27017`
-- **Mongo Express (interface web)** → [http://localhost:8081](http://localhost:8081)
-  - Identifiant : `admin`
-  - Mot de passe : `admin`
-
-> ⚠️ Les scripts d’init (`init/`) ne sont exécutés qu’au **premier lancement** sur un volume vide.  
-> Si vous les avez ajoutés après, faites un reset :
->
-> ```bash
-> docker compose down -v && docker compose up -d
-> ```
+```json
+{ "ok": true, "published": true }
+```
 
 ---
 
-### 3️⃣ Configurer le serveur Node.js
+## 🧱 Build & Exécution Docker
 
-Depuis `box/gatt-server` :
+### 🔨 Construire l’image
 
 ```bash
-npm install
+./build.sh
 ```
 
-Créez le fichier `.env` :
+Cela crée une image locale :
 
 ```
-MONGODB_URI=mongodb://app:root@localhost:27017/?authSource=admin
+ial/gatt-server
 ```
 
----
+> ⚠️ **Note** : Cette image est utilisée directement dans le **docker-compose** de la montre connectée.
 
-### 4️⃣ Démarrer le serveur
+### 🏃 Lancer en local (sans compose)
 
 ```bash
-npm run dev
-```
-
-✅ Si tout est correct, vous verrez :
-
-```
-[mongo] connecté
-Messages récents: [...]
+docker run -d --name ingest-server \
+  -e NATS_SERVER=nats://nats:4222 \
+  -e BOX_PRODUCER_QUEUE=measurements.watch1 \
+  -p 3000:3000 \
+  ial/gatt-server
 ```
 
 ---
 
-## 🔐 Sécurité (bonnes pratiques)
+## 🧩 Intégration NATS
 
-- ❌ **Ne pas committer** le fichier `.env`
-- 🔐 Utiliser un **compte non-root** pour l’application
-- 🔑 Choisir un mot de passe fort (et l’URL-encoder si besoin)
-- 🌐 En production : préférer **MongoDB Atlas**, avec des _Network Rules_ et un _user par environnement_
+- Le module [`lib/nats.js`](./lib/nats.js) gère la connexion à NATS et la publication dans JetStream.
+- Le sujet est défini par la variable `BOX_PRODUCER_QUEUE`.
+- Chaque message publié contient :
+  ```json
+  {
+    "source": "mock-watch-1",
+    "deviceType": "watch",
+    "type": "temperature",
+    "value": 36.8,
+    "unit": "°C",
+    "timestamp": "2025-11-01T10:45:00Z",
+    "receivedAt": "2025-11-01T10:45:05Z"
+  }
+  ```
 
 ---
 
-## 🧠 Pour aller plus loin
+## 🧪 Test de santé
 
-- Ajouter une API REST (`POST /ingest`, `GET /messages`)
-- Ajouter un frontend minimal (React / Angular)
-- Intégrer un service d’analyse des données (ex: Grafana / InfluxDB)
-- Dockeriser le serveur Node.js pour un déploiement complet
-
----
-
-## 👩‍💻 Auteur
-
-**Emma ALLAIN**
+```bash
+curl http://localhost:3000/health
+# → {"status":"ok","ts":1730457900000}
+```
