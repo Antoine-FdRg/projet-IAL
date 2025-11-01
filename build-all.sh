@@ -12,6 +12,7 @@ components=(
     "box/outlier-filter"
     "box/uploader"
     "save-service"
+    "analyze-service"
 )
 
 build_dir() {
