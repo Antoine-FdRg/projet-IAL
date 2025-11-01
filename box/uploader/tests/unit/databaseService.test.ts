@@ -195,7 +195,31 @@ describe('DatabaseService', () => {
 
       await DatabaseService.saveCompressedMeasurements(measurements);
 
-      expect(mockCollection.insertMany).toHaveBeenCalledWith(measurements);
+      expect(mockCollection.insertMany).toHaveBeenCalledTimes(1);
+      const calledWith = mockCollection.insertMany.mock.calls[0][0];
+
+      expect(calledWith).toHaveLength(2);
+      expect(calledWith[0]).toMatchObject({
+        type: 'temperature',
+        value: 21.5,
+        unit: '°C',
+        timestamp: '2023-01-01T10:00:00Z',
+        source: 'uploader-compressed'
+      });
+      expect(calledWith[0]).toHaveProperty('messageId');
+      expect(calledWith[0]).toHaveProperty('receivedAt');
+      expect(calledWith[0]).toHaveProperty('expireAt');
+
+      expect(calledWith[1]).toMatchObject({
+        type: 'pulse',
+        value: 75,
+        unit: 'bpm',
+        timestamp: '2023-01-01T11:00:00Z',
+        source: 'uploader-compressed'
+      });
+      expect(calledWith[1]).toHaveProperty('messageId');
+      expect(calledWith[1]).toHaveProperty('receivedAt');
+      expect(calledWith[1]).toHaveProperty('expireAt');
     });
 
     it('should handle empty measurements array', async () => {

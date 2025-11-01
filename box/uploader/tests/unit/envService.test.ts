@@ -94,7 +94,6 @@ describe('EnvService', () => {
 
     it('should throw error when BOX_UUID is not set', () => {
       delete process.env.BOX_UUID;
-      process.env.BOX_UUID = 'box-2-uuid';
 
       expect(() => EnvService.getBoxId()).toThrow('Veuillez définir la variable d\'environnement BOX_UUID');
     });

@@ -94,6 +94,28 @@ calculate_duration() {
 }
 
 # ───────────────────────────────
+# Check and install npm dependencies
+# ───────────────────────────────
+ensure_dependencies() {
+    local dir=$1
+    local service_name
+    service_name=$(basename "$dir")
+    
+    # Check if node_modules exists and is not empty
+    if [ ! -d "$dir/node_modules" ] || [ -z "$(ls -A "$dir/node_modules" 2>/dev/null)" ]; then
+        echo -e "${YELLOW}📦 Installing packages for ${BOLD}${service_name}${NC}${YELLOW}...${NC}" >&2
+        npm install --silent >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ Packages installed for ${BOLD}${service_name}${NC}" >&2
+        else
+            echo -e "${RED}✗ Failed to install packages for ${BOLD}${service_name}${NC}" >&2
+            return 1
+        fi
+    fi
+    return 0
+}
+
+# ───────────────────────────────
 # Run tests for a single service
 # ───────────────────────────────
 run_tests_bg() {
@@ -118,6 +140,16 @@ run_tests_bg() {
         local end_time=$(get_timestamp)
         local duration=$(calculate_duration "$start_time" "$end_time")
         echo "SKIP:no_test_script:$duration" > "$result_file"
+        rm -f "$running_file"
+        popd >/dev/null
+        return
+    fi
+
+    # Ensure dependencies are installed
+    if ! ensure_dependencies "$dir"; then
+        local end_time=$(get_timestamp)
+        local duration=$(calculate_duration "$start_time" "$end_time")
+        echo "SKIP:npm_install_failed:$duration" > "$result_file"
         rm -f "$running_file"
         popd >/dev/null
         return

@@ -14,7 +14,12 @@ describe('EnvService', () => {
             TEMPERATURE_MAX: '42',
             POIDS_MIN: '15',
             POIDS_MAX: '500',
-            STEPS_MIN: '0'
+            STEPS_MIN: '0',
+            MONGO_HOST: 'localhost',
+            MONGO_PORT: '27017',
+            MONGO_USERNAME: 'test_user',
+            MONGO_PASSWORD: 'test_password',
+            MONGO_DATABASE: 'test_db'
         };
     });
 
@@ -124,6 +129,52 @@ describe('EnvService', () => {
     test('should throw error when verifying queue env vars if missing OUTLIER_FILTER_CONSUME_QUEUE', () => {
         delete process.env.OUTLIER_FILTER_CONSUME_QUEUE;
         expect(() => EnvService.verifyQueueEnvVars()).toThrow();
+    });
+
+    // MongoDB environment variable tests
+    test('should return MongoDB host', () => {
+        expect(EnvService.getMongoHost()).toBe('localhost');
+    });
+
+    test('should throw error if missing MONGO_HOST', () => {
+        delete process.env.MONGO_HOST;
+        expect(() => EnvService.getMongoHost()).toThrow();
+    });
+
+    test('should return MongoDB port', () => {
+        expect(EnvService.getMongoPort()).toBe('27017');
+    });
+
+    test('should throw error if missing MONGO_PORT', () => {
+        delete process.env.MONGO_PORT;
+        expect(() => EnvService.getMongoPort()).toThrow();
+    });
+
+    test('should return MongoDB username', () => {
+        expect(EnvService.getMongoUsername()).toBe('test_user');
+    });
+
+    test('should throw error if missing MONGO_USERNAME', () => {
+        delete process.env.MONGO_USERNAME;
+        expect(() => EnvService.getMongoUsername()).toThrow();
+    });
+
+    test('should return MongoDB password', () => {
+        expect(EnvService.getMongoPassword()).toBe('test_password');
+    });
+
+    test('should throw error if missing MONGO_PASSWORD', () => {
+        delete process.env.MONGO_PASSWORD;
+        expect(() => EnvService.getMongoPassword()).toThrow();
+    });
+
+    test('should return MongoDB database', () => {
+        expect(EnvService.getMongoDatabase()).toBe('test_db');
+    });
+
+    test('should throw error if missing MONGO_DATABASE', () => {
+        delete process.env.MONGO_DATABASE;
+        expect(() => EnvService.getMongoDatabase()).toThrow();
     });
 
 });
