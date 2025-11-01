@@ -1,6 +1,7 @@
 services:
   gatt-server:
-      build: ../../box/gatt-server
+      image: ial/gatt-server
+      container_name: gatt-server
       restart: always
       env_file:
         - ../../box/gatt-server/.env
@@ -10,12 +11,14 @@ services:
       - nats-network
 
   mock-watch:
-      build: .
+      image: ial/mock-watch
       container_name: mock-watch
       restart: always
       env_file:
         - .env  
       tty: true
+      networks:
+      - nats-network
 
 networks:
   nats-network:

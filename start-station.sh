@@ -32,6 +32,7 @@ docker-compose -p ial-station \
   -f box/outlier-filter/docker-compose.yml \
   -f box/normalizer/docker-compose.yml \
   -f box/uploader/docker-compose.yml \
+  -f devices/mock-watch/docker-compose.yml \
   up -d
 
 echo "✅ Station started successfully"
