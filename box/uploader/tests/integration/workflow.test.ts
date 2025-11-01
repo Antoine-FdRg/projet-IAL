@@ -89,7 +89,7 @@ describe('Integration Tests - Services Working Together', () => {
       await DatabaseService.connect();
 
       const compressedMeasurements: RawMeasurement[] = [
-        { type: 'temperature', value: 21.0, unit: '°C', timestamp: '2023-01-01T10:00:00Z' },
+        { type: 'temperature', value: 21.0, unit: 'C', timestamp: '2023-01-01T10:00:00Z' },
         { type: 'pulse', value: 75.0, unit: 'bpm', timestamp: '2023-01-01T10:30:00Z' }
       ];
 
@@ -97,7 +97,31 @@ describe('Integration Tests - Services Working Together', () => {
 
       await DatabaseService.saveCompressedMeasurements(compressedMeasurements);
 
-      expect(mockCollection.insertMany).toHaveBeenCalledWith(compressedMeasurements);
+      expect(mockCollection.insertMany).toHaveBeenCalledTimes(1);
+      const calledWith = mockCollection.insertMany.mock.calls[0][0];
+
+      expect(calledWith).toHaveLength(2);
+      expect(calledWith[0]).toMatchObject({
+        type: 'temperature',
+        value: 21.0,
+        unit: 'C',
+        timestamp: '2023-01-01T10:00:00Z',
+        source: 'uploader-compressed'
+      });
+      expect(calledWith[0]).toHaveProperty('messageId');
+      expect(calledWith[0]).toHaveProperty('receivedAt');
+      expect(calledWith[0]).toHaveProperty('expireAt');
+
+      expect(calledWith[1]).toMatchObject({
+        type: 'pulse',
+        value: 75.0,
+        unit: 'bpm',
+        timestamp: '2023-01-01T10:30:00Z',
+        source: 'uploader-compressed'
+      });
+      expect(calledWith[1]).toHaveProperty('messageId');
+      expect(calledWith[1]).toHaveProperty('receivedAt');
+      expect(calledWith[1]).toHaveProperty('expireAt');
     });
   });
 
@@ -201,7 +225,7 @@ describe('Integration Tests - Services Working Together', () => {
       await DatabaseService.connect();
 
       const compressedMeasurements: RawMeasurement[] = [
-        { type: 'temperature', value: 21.0, unit: '°C', timestamp: '2023-01-01T10:00:00Z' }
+        { type: 'temperature', value: 21.0, unit: 'C', timestamp: '2023-01-01T10:00:00Z' }
       ];
 
       // Mock save service failure
@@ -221,7 +245,20 @@ describe('Integration Tests - Services Working Together', () => {
       await DatabaseService.removeAllMeasurementsCollection();
       await DatabaseService.saveCompressedMeasurements(compressedMeasurements);
 
-      expect(mockCollection.insertMany).toHaveBeenCalledWith(compressedMeasurements);
+      expect(mockCollection.insertMany).toHaveBeenCalledTimes(1);
+      const calledWith = mockCollection.insertMany.mock.calls[0][0];
+
+      expect(calledWith).toHaveLength(1);
+      expect(calledWith[0]).toMatchObject({
+        type: 'temperature',
+        value: 21.0,
+        unit: 'C',
+        timestamp: '2023-01-01T10:00:00Z',
+        source: 'uploader-compressed'
+      });
+      expect(calledWith[0]).toHaveProperty('messageId');
+      expect(calledWith[0]).toHaveProperty('receivedAt');
+      expect(calledWith[0]).toHaveProperty('expireAt');
     });
   });
 
@@ -263,7 +300,7 @@ describe('Integration Tests - Services Working Together', () => {
       expect(pulseCompressed?.value).toBe(70); // (68 + 72) / 2
 
       const stepsCompressed = compressedMeasurements.find(m => m.type === 'steps');
-      expect(stepsCompressed?.value).toBe(1000); // (500 + 1500) / 2
+      expect(stepsCompressed?.value).toBe(2000); // Sum: 500 + 1500 (steps are summed, not averaged)
 
       // Step 3: Send to save service
       mockFetch.mockResolvedValueOnce({

@@ -51,11 +51,9 @@ async function main() {
         await executeUploadWorkflow();
         await DatabaseService.disconnect();
         console.log(`[${new Date().toISOString()}] - Workflow terminé, fermeture de la connexion`);
-        process.exit(0);
     } catch (error) {
         console.error(`[${new Date().toISOString()}] - Erreur dans le service uploader:`, error);
         await DatabaseService.disconnect();
-        process.exit(1);
     }
 }
 
