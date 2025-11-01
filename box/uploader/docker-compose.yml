@@ -16,11 +16,11 @@ services:
       - UPLOADER_SCHEDULE_INTERVAL=${UPLOADER_SCHEDULE_INTERVAL}
     networks:
       - station-network
-      - cloud-network
+      - internet-network
 
 networks:
   station-network:
     driver: bridge
-  cloud-network:
+  internet-network:
     external: true
-    name: ial-cloud_cloud-network
+    name: ial-cloud_internet-network

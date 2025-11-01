@@ -18,6 +18,7 @@ services:
       - "${PORT:-3000}:3000"
     networks:
       - cloud-network
+      - internet-network
     depends_on:
       measurement-db:
         condition: service_healthy
@@ -39,4 +40,6 @@ services:
 
 networks:
   cloud-network:
+    driver: bridge
+  internet-network:
     driver: bridge
