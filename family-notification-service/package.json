@@ -1,0 +1,32 @@
+{
+  "name": "family-notification-service",
+  "version": "1.0.0",
+  "description": "Cron service for sending Discord notifications to family members based on patient health status",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "npx tsx src/main.ts",
+    "dev": "npx tsx watch src/main.ts"
+  },
+  "keywords": [
+    "iot",
+    "cron",
+    "discord",
+    "notifications",
+    "health"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@types/node": "^24.8.0",
+    "dotenv": "^17.2.3",
+    "node-cron": "^3.0.3",
+    "pg": "^8.11.3",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.10.9",
+    "tsx": "^4.20.6"
+  }
+}

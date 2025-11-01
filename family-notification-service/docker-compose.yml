@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  family-notification-service:
+    container_name: family-notification-service
+    image: ial/family-notification-service:latest
+    environment:
+      # Cron Configuration
+      - CRON_SCHEDULE=${CRON_SCHEDULE:-*/10 * * * *}
+      - RUN_ON_STARTUP=${RUN_ON_STARTUP:-false}
+
+      # Discord Configuration
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+
+      # Analyze Service Configuration
+      - ANALYZE_SERVICE_URL=http://analyze-service:3001
+      - ANALYZE_SERVICE_TIMEOUT=10000
+
+      # User Database Configuration
+      - USER_DB_HOST=user-db
+      - USER_DB_PORT=5432
+      - USER_DB_NAME=user
+      - USER_DB_USER=user
+      - USER_DB_PASSWORD=user_password
+
+      # Measurement Database Configuration
+      - MEASUREMENT_DB_HOST=measurement-db
+      - MEASUREMENT_DB_PORT=5432
+      - MEASUREMENT_DB_NAME=measurement_db
+      - MEASUREMENT_DB_USER=ial_user
+      - MEASUREMENT_DB_PASSWORD=ial_password
+    # Dependencies managed externally - services already running
+    # depends_on is commented out since services are in other docker-compose files
+    networks:
+      - cloud-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "node"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cloud-network:
+    external: true
+    name: ial-cloud_cloud-network
