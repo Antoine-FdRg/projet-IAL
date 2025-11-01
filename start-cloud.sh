@@ -10,6 +10,7 @@ docker-compose -p ial-cloud \
   --env-file .env.cloud \
   -f databases/measurement-db/docker-compose.yml \
   -f save-service/docker-compose.yml \
+  -f analyze-service/docker-compose.yml \
   up -d
 
 
