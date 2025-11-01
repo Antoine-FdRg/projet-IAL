@@ -48,6 +48,9 @@ De la même manière, toutes les communications entre la Station et le cloud son
 
 Si malgré cela des mesures sont victimes d'un ransomware, elles seront rachetées pour garantir la privacité des données.
 
+### 5. Réception de fausse donnée
+Pour éviter la réception de fausses données, une mécanisme de signature des échanges Bluetooth est mis en place. Chaque message envoyé à la Station est signé numériquement, et la Station vérifie la signature avant de traiter le message. Cela permet de s'assurer que les données proviennent bien d'une source authentique et n'ont pas été altérées en cours de route.
+
 ## Fonctionnement général
 ### Diagramme de séquence de réception d’un message
 ```mermaid
