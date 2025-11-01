@@ -13,8 +13,8 @@
 
 ##  Description du sujet
 
-Le projet **IAL** a pour objectif de concevoir un **système de suivi de santé à domicile** pour les personnes âgées.  
-Ce système s’appuie sur une **station connectée** associée à différents **dispositifs médicaux (montre, balance, etc.)** permettant de mesurer plusieurs paramètres physiologiques :  
+Le projet IAL a pour objectif de concevoir un système de suivi de santé à domicile pour les personnes âgées.  
+Ce système s’appuie sur une station connectée associée à différents dispositifs médicaux (montre, balance, etc.) permettant de mesurer plusieurs paramètres physiologiques :  
 - Poids  
 - Pouls  
 - Température corporelle  
