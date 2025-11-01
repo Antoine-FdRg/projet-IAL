@@ -1,0 +1,12 @@
+{
+  "name": "mock-watch",
+  "version": "1.0.0",
+  "description": "Simulateur de montre connectée envoyant des mesures vers le GATT server",
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

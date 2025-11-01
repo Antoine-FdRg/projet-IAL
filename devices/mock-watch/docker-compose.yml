@@ -1,0 +1,20 @@
+services:
+  mock-watch:
+    image: ial/mock-watch
+    container_name: mock-watch
+    restart: always
+    environment:
+      - ENDPOINT_URL=${ENDPOINT_URL}
+      - PULSE_INTERVAL_MS=${PULSE_INTERVAL_MS}
+      - SEND_INTERVAL_MS=${SEND_INTERVAL_MS}
+      - INIT_WEIGHT_KG=${INIT_WEIGHT_KG}
+      - SOURCE_ID=${SOURCE_ID}
+      - DEVICE_TYPE=${DEVICE_TYPE}
+    tty: true
+    networks:
+      - ial-station_home-network
+
+networks:
+  ial-station_home-network:
+    external: true
+    driver: bridge

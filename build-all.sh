@@ -12,6 +12,8 @@ components=(
     "box/outlier-filter"
     "box/uploader"
     "save-service"
+    "box/gatt-server"
+    "devices/mock-watch"
 )
 
 build_dir() {

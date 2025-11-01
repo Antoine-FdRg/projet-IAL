@@ -15,8 +15,6 @@ COPY tsconfig.json ./
 # Copy environment example (actual .env will be mounted)
 COPY .env ./
 
-# Expose port
-EXPOSE 3000
 
 # Start the service
 CMD ["npm", "start"]

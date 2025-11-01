@@ -11,6 +11,8 @@ docker-compose -p ial-station \
                --file box/cleaner/docker-compose.yml \
                --file box/outlier-filter/docker-compose.yml \
                --file box/uploader/docker-compose.yml \
+               --file databases/user-db/docker-compose.yml \
+               --file devices/mock-watch/docker-compose.yml \
                --file box/normalizer/docker-compose.yml down -v
 
 echo "All box services stopped"
