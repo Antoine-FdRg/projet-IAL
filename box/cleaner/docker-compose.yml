@@ -10,7 +10,7 @@ services:
       - CLEANER_CONSUME_QUEUE=MEASUREMENT.to_clean
       - CLEANER_PRODUCER_QUEUE=${CLEANER_PRODUCER_QUEUE}
     networks:
-      - nats-network
+      - station-network
 networks:
-  nats-network:
+  station-network:
     driver: bridge

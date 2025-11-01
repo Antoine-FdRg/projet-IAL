@@ -21,11 +21,8 @@ services:
       - MONGO_PASSWORD=root
       - MONGO_DATABASE=messagesdb
     networks:
-      - nats-network
-      - mongo_mongo-network
+      - station-network
 
 networks:
-  nats-network:
+  station-network:
     driver: bridge
-  mongo_mongo-network:
-    external: true

@@ -1,0 +1,26 @@
+services:
+  uploader:
+    image: ial/uploader
+    container_name: uploader
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USERNAME=app
+      - MONGO_PASSWORD=root
+      - MONGO_DATABASE=messagesdb
+      - SAVE_SERVICE_URL=${SAVE_SERVICE_URL}
+      - BOX_UUID=${BOX_UUID}
+      - UPLOADER_SCHEDULE_INTERVAL=${UPLOADER_SCHEDULE_INTERVAL}
+    networks:
+      - station-network
+      - internet-network
+
+networks:
+  station-network:
+    driver: bridge
+  internet-network:
+    external: true
+    name: ial-cloud_internet-network

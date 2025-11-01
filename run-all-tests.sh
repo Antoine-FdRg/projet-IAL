@@ -261,12 +261,11 @@ echo "Project root: $PROJECT_ROOT"
 echo -e "Max parallel jobs: ${PURPLE}${BOLD}$MAX_JOBS${NC}"
 
 ALL_SERVICES=(
-    "$PROJECT_ROOT/box/broker"
     "$PROJECT_ROOT/box/broker-client"
     "$PROJECT_ROOT/box/cleaner"
     "$PROJECT_ROOT/box/normalizer"
     "$PROJECT_ROOT/box/outlier-filter"
-    "$PROJECT_ROOT/box/gatt-server"
+    "$PROJECT_ROOT/box/uploader"
     "$PROJECT_ROOT/save-service"
 )
 
