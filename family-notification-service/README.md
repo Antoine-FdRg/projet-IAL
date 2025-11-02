@@ -10,6 +10,37 @@ Le `family-notification-service` est un service Node.js/TypeScript avec cron qui
 3. Appelle l'endpoint `/analyse/:stationId/family` de l'analyze-service pour chaque patient
 4. Envoie un message Discord simple avec emoji pour chaque patient
 
+## Utilisation
+
+### Démarrage
+
+```bash
+# Avec docker-compose
+cd family-notification-service
+docker-compose up -d
+
+# Ou intégré dans la stack globale
+./start-cloud.sh  # (si ajouté au script)
+```
+
+### Logs
+
+```bash
+# Voir les logs en temps réel
+docker logs -f family-notification-service
+
+# Voir le dernier résumé d'exécution
+docker logs family-notification-service | grep "Cron Job Summary" -A 10
+```
+
+### Configuration du webhook Discord
+
+1. Dans Discord, allez dans les paramètres du serveur
+2. Intégrations → Webhooks → Nouveau Webhook
+3. Choisissez le canal de destination
+4. Copiez l'URL du webhook
+5. Ajoutez dans `.env` : `DISCORD_WEBHOOK_URL=<url_copiée>`
+
 ## Architecture
 
 ```
@@ -95,37 +126,6 @@ Le format cron suit la syntaxe standard :
 - `0 */1 * * *` : Toutes les heures
 - `0 8 * * 1` : Tous les lundis à 8h00
 - `0 0 * * 0` : Tous les dimanches à minuit (1 fois par semaine)
-
-## Utilisation
-
-### Démarrage
-
-```bash
-# Avec docker-compose
-cd family-notification-service
-docker-compose up -d
-
-# Ou intégré dans la stack globale
-./start-cloud.sh  # (si ajouté au script)
-```
-
-### Logs
-
-```bash
-# Voir les logs en temps réel
-docker logs -f family-notification-service
-
-# Voir le dernier résumé d'exécution
-docker logs family-notification-service | grep "Cron Job Summary" -A 10
-```
-
-### Configuration du webhook Discord
-
-1. Dans Discord, allez dans les paramètres du serveur
-2. Intégrations → Webhooks → Nouveau Webhook
-3. Choisissez le canal de destination
-4. Copiez l'URL du webhook
-5. Ajoutez dans `.env` : `DISCORD_WEBHOOK_URL=<url_copiée>`
 
 ## Développement
 
