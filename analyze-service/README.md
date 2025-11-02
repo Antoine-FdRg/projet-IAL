@@ -1,10 +1,10 @@
 # Analyze Service - Service d'Analyse d'Anomalies
 
-Service de détection d'anomalies en temps réel pour les mesures de santé IoT.
+Service REST API de détection d'anomalies pour les mesures de santé IoT.
 
 ## Vue d'ensemble
 
-Le `analyze-service` surveille en temps réel les mesures de santé (poids, pouls, température) et détecte automatiquement les anomalies selon trois types d'analyses :
+Le `analyze-service` est une API REST qui analyse les mesures de santé (poids, pouls, température) stockées dans TimescaleDB et détecte automatiquement les anomalies selon trois types d'analyses :
 
 1. **Seuils absolus** : Détecte les valeurs qui dépassent les limites physiologiques normales
 2. **Variations brusques** : Identifie les changements rapides et anormaux
@@ -15,19 +15,74 @@ Le `analyze-service` surveille en temps réel les mesures de santé (poids, poul
 ### Fonctionnement
 
 ```
-PostgreSQL NOTIFY → LISTEN → analyze-service → Analyseurs (3 types) → Alertes Console
-       ↑                                                                        ↓
-       |                                                              (Future: API externe)
-  Trigger sur INSERT
+Service Client → HTTP GET /analyse/:stationId/{family|doctor} → Analyze Service
+                                                                      ↓
+                                                              Requête TimescaleDB
+                                                                      ↓
+                                                          Analyseurs (3 types)
+                                                                      ↓
+                                                          Response JSON
 ```
 
-Le service utilise le mécanisme PostgreSQL LISTEN/NOTIFY pour recevoir les notifications en temps réel :
-- Un trigger sur la table `measurements` émet une notification via `pg_notify()`
-- Le service maintient une connexion persistante avec `LISTEN new_measurement`
-- Chaque nouvelle mesure déclenche les 3 analyseurs en parallèle
-- Les anomalies détectées génèrent des alertes formatées dans la console
+Le service expose une API REST avec deux endpoints :
+- **Endpoint Family** : Analyse simplifiée sur 7 jours pour les proches
+- **Endpoint Doctor** : Analyse détaillée sur 24 heures pour les médecins
 
-### Types d'Anomalies
+### Endpoints
+
+#### GET `/analyse/:stationId/family`
+
+Analyse simplifiée pour les membres de la famille.
+
+**Paramètres :**
+- `stationId` (UUID) : Identifiant de la box/station
+
+**Réponse :**
+```json
+{
+  "state": "great" | "okay" | "bad" | "terrible",
+  "message": "État général stable sur 7 jours"
+}
+```
+
+**Logique :**
+- Analyse les moyennes sur les 7 derniers jours
+- Score simple basé sur des seuils absolus
+- Message synthétique pour une compréhension rapide
+
+**États :**
+- `great` (0) : Toutes les moyennes dans les normes
+- `okay` (1) : Légère déviation sur au moins une mesure
+- `bad` (2) : Déviation notable nécessitant attention
+- `terrible` (3) : Valeurs critiques nécessitant intervention
+
+#### GET `/analyse/:stationId/doctor`
+
+Analyse détaillée pour les professionnels de santé.
+
+**Paramètres :**
+- `stationId` (UUID) : Identifiant de la box/station
+
+**Réponse :**
+```json
+{
+  "severity": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
+  "reason": "Pouls: 165 bpm (tachycardie), Δ 45 bpm en 10 min | Poids: +5.2 kg en 24h"
+}
+```
+
+**Logique :**
+- Analyse toutes les mesures des dernières 24 heures
+- Applique les 3 analyseurs (seuils, variations, tendances)
+- Retourne la sévérité la plus élevée détectée
+- Génère un résumé détaillé avec valeurs, durées et terminologie médicale
+
+**Exemple de `reason` détaillé :**
+```
+"Température: 39.2°C (hyperthermie), Δ 2.1°C en 30 min | Pouls: 165 bpm (tachycardie), Δ 45 bpm en 10 min | Poids: 78.5 kg (+12.3 kg vs moy. 7j), +5.2 kg en 24h"
+```
+
+### Types d'Anomalies Détectées
 
 #### 🚨 Seuils Absolus (ABSOLUTE_THRESHOLD)
 
@@ -65,6 +120,10 @@ Patterns anormaux sur des périodes prolongées :
 ### Variables d'environnement
 
 ```env
+# Server Configuration
+PORT=3001
+NODE_ENV=production
+
 # Database Connection
 DB_HOST=measurement-db
 DB_PORT=5432
@@ -75,10 +134,6 @@ DB_PASSWORD=ial_password
 # Connection Pool
 DB_POOL_MIN=2
 DB_POOL_MAX=10
-
-# Analysis Configuration
-ANALYSIS_HISTORY_HOURS=24    # Historique pour analyse de tendances
-ANALYSIS_TREND_HOURS=4       # Fenêtre d'analyse des tendances
 ```
 
 ### Configuration des Seuils
@@ -105,7 +160,63 @@ Le service est intégré dans la stack Docker et démarre automatiquement avec :
 
 # Ou démarrer uniquement les services cloud
 ./start-cloud.sh
+
+# Ou démarrer le service individuellement
+cd analyze-service
+docker-compose up -d
 ```
+
+Le service est accessible sur `http://localhost:3001` (par défaut).
+
+### Exemples d'appels API
+
+#### Health Check
+
+```bash
+curl http://localhost:3001/health
+```
+
+**Réponse :**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-11-01T16:25:17.125Z"
+}
+```
+
+#### Analyse Family
+
+```bash
+curl http://localhost:3001/analyse/550e8400-e29b-41d4-a716-446655440001/family
+```
+
+**Réponse :**
+```json
+{
+  "state": "bad",
+  "message": "Température élevée (38.5°C) et pouls rapide (165 bpm) détectés sur les 7 derniers jours"
+}
+```
+
+#### Analyse Doctor
+
+```bash
+curl http://localhost:3001/analyse/550e8400-e29b-41d4-a716-446655440001/doctor
+```
+
+**Réponse :**
+```json
+{
+  "severity": "CRITICAL",
+  "reason": "Température: 39.2°C (hyperthermie), Δ 2.1°C en 30 min | Pouls: 165 bpm (tachycardie), Δ 45 bpm en 10 min"
+}
+```
+
+### Codes d'erreur
+
+- `400 Bad Request` : Format UUID invalide
+- `404 Not Found` : Box ID inexistant dans la base
+- `500 Internal Server Error` : Erreur serveur
 
 ### Monitoring des Logs
 
@@ -113,32 +224,8 @@ Le service est intégré dans la stack Docker et démarre automatiquement avec :
 # Voir les logs en temps réel
 docker logs -f analyze-service
 
-# Voir les dernières alertes
-docker logs analyze-service | grep "ALERTE"
-```
-
-### Format des Alertes
-
-Exemple d'alerte affichée dans la console :
-
-```
-================================================================================
-🚨 [ALERTE CRITICAL] 2025-11-01T16:25:17.125Z
-================================================================================
-Box ID       : 550e8400-e29b-41d4-a716-446655440001
-Type         : Variation brusque
-Mesure       : weight = 121.62 kg
-Message      : Gain rapide de poids : 33.29 kg en 24 heures
-
-Contexte :
-  - Moyenne sur 1h: 91.93
-  - Valeur précédente: 88.33
-  - Variation: +33.29
-  - Fenêtre temporelle: 24.00
-  - Seuil: 3.00
-
-Recommandation : 🚨 URGENCE MÉDICALE - Contacter immédiatement le patient et envisager une intervention d'urgence
-================================================================================
+# Voir les dernières requêtes
+docker logs analyze-service | grep "GET /analyse"
 ```
 
 ## Développement
@@ -148,18 +235,26 @@ Recommandation : 🚨 URGENCE MÉDICALE - Contacter immédiatement le patient et
 ```
 analyze-service/
 ├── src/
-│   ├── main.ts                          # Point d'entrée avec LISTEN/NOTIFY
-│   ├── types.ts                         # Types TypeScript
+│   ├── main.ts                          # Point d'entrée Express
+│   ├── types.ts                         # Types TypeScript (DTOs, interfaces)
 │   ├── database/
-│   │   ├── connection.ts                # Pool PostgreSQL + NOTIFY client
+│   │   ├── connection.ts                # Pool PostgreSQL
+│   │   ├── boxRepository.ts             # Validation des boxes
 │   │   └── measurementRepository.ts     # Requêtes historiques
 │   ├── analyzers/
 │   │   ├── absoluteThresholdAnalyzer.ts # Analyseur de seuils
 │   │   ├── variationAnalyzer.ts         # Analyseur de variations
 │   │   └── trendAnalyzer.ts             # Analyseur de tendances
 │   ├── services/
-│   │   ├── analysisService.ts           # Orchestration des analyseurs
-│   │   └── alertService.ts              # Gestion et formatage des alertes
+│   │   ├── familyAnalysisService.ts     # Logique endpoint family
+│   │   └── doctorAnalysisService.ts     # Logique endpoint doctor
+│   ├── controllers/
+│   │   ├── familyAnalysisController.ts  # Controller family
+│   │   └── doctorAnalysisController.ts  # Controller doctor
+│   ├── routes/
+│   │   └── analyzeRoutes.ts             # Définition des routes Express
+│   ├── middleware/
+│   │   └── errorHandler.ts              # Gestion globale des erreurs
 │   └── config/
 │       └── thresholds.ts                # Configuration des seuils
 ├── Dockerfile
@@ -174,11 +269,13 @@ analyze-service/
 # Installer les dépendances
 npm install
 
-# Lancer en mode développement (avec hot-reload)
-npm run dev
+# Lancer en mode développement
+npm start
 
-# Lancer les tests (à venir)
-npm test
+# Tester les endpoints
+curl http://localhost:3001/health
+curl http://localhost:3001/analyse/550e8400-e29b-41d4-a716-446655440001/family
+curl http://localhost:3001/analyse/550e8400-e29b-41d4-a716-446655440001/doctor
 ```
 
 ### Build
@@ -197,55 +294,50 @@ Le service s'intègre dans l'architecture globale :
 
 ```
 IoT Box → NATS Pipeline → Save Service → TimescaleDB
-                                            ↓ (NOTIFY trigger)
-                                        Analyze Service
-                                            ↓
-                                     Alertes Console
-                                     (Future: Webhook API)
+                                            ↑
+                                    Analyze Service (REST API)
+                                            ↑
+                                  Services Clients (Dashboard, Mobile App, etc.)
 ```
 
-### Trigger PostgreSQL
+Le service est **pull-based** : il ne reçoit pas de notifications automatiques, mais répond à la demande lorsqu'un client appelle les endpoints REST.
 
-Le trigger est automatiquement créé par `databases/measurement-db/init.sql` :
+## User Stories
 
-```sql
-CREATE OR REPLACE FUNCTION notify_new_measurement()
-RETURNS TRIGGER AS $$
-BEGIN
-    PERFORM pg_notify('new_measurement', json_build_object(...)::text);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+### Story 1 : Famille
 
-CREATE TRIGGER trigger_notify_new_measurement
-    AFTER INSERT ON measurements
-    FOR EACH ROW
-    EXECUTE FUNCTION notify_new_measurement();
-```
+**En tant que membre de la famille**
+Je veux voir rapidement l'état général de mon proche
+Afin de savoir si je dois m'inquiéter ou non
 
-## User Story
+**Implémentation** : Endpoint `/analyse/:stationId/family`
+- ✅ Analyse sur 7 jours pour vision globale
+- ✅ États simples (great/okay/bad/terrible)
+- ✅ Message synthétique compréhensible par un non-médecin
+
+### Story 2 : Médecin
 
 **En tant que médecin**
-Je veux recevoir une notification en cas d'anomalie de santé
-Afin de décider rapidement après analyse si je dois ordonner une visite infirmière
+Je veux recevoir une analyse détaillée en cas d'anomalie de santé
+Afin de décider rapidement si je dois ordonner une visite infirmière
 
-### Implémentation
-
-✅ **Notification en temps réel** : Le service détecte les anomalies instantanément via PostgreSQL NOTIFY
-✅ **Analyse multi-échelle** : Combine 3 types d'analyses (seuils, variations, tendances)
-✅ **Contexte enrichi** : Chaque alerte inclut les données historiques et le contexte
-✅ **Recommandations graduées** : 4 niveaux de sévérité avec recommandations d'action
-🔄 **À venir** : Intégration webhook pour envoyer les alertes vers une API externe
+**Implémentation** : Endpoint `/analyse/:stationId/doctor`
+- ✅ Analyse détaillée sur 24h pour vision précise
+- ✅ 3 types d'analyses (seuils, variations, tendances)
+- ✅ Sévérité graduée (CRITICAL/HIGH/MEDIUM/LOW)
+- ✅ Raison détaillée avec valeurs, durées et terminologie médicale
+- ✅ Format user-friendly : "Pouls: 165 bpm (tachycardie), Δ 45 bpm en 10 min"
 
 ## Évolutions Futures
 
 - [ ] Persistance des alertes dans une table `anomaly_alerts`
-- [ ] API REST pour consulter l'historique des alertes
+- [ ] Endpoint GET pour consulter l'historique des analyses
 - [ ] Webhook configurable pour notifier un système externe
 - [ ] Machine Learning pour affiner les seuils par patient
-- [ ] Dashboard temps réel avec visualisation des anomalies
 - [ ] Configuration des seuils via API (sans rebuild)
 - [ ] Tests unitaires et d'intégration complets
+- [ ] Authentification et autorisation (JWT)
+- [ ] Rate limiting et caching pour optimiser les performances
 
 ## Licence
 
