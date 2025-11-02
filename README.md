@@ -167,7 +167,6 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 > Éléments techniques réutilisables
 
 - Envoi de messages WhatsApp
-- Notification Service Google
 - Les appareils connectés (les montres sont existantes)
 
 ## Contraintes techniques

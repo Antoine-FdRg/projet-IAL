@@ -1,36 +1,5 @@
 # IoT Gateway - Station
 La Station est l'IoT gateway, une pièce obligatoire du système, le seul appareil que tous les utilisateurs doivent posséder car il recueille les données des capteurs via des message Bluetooth Low Energy GATT, les traites localement, les sauvegarde localement, avant les envoyer dans le cloud toutes les 30 minutes. C'est la edge layer de notre système.
-```mermaid
-graph
-		Device["Montre"]
-		subgraph Boitier["IoT Gateway (Station)"]
-			subgraph softb["Software"]
-			ble["Serveur BLE<br/>réception des message"]
-	    Cleaner["Cleaner<br/>(supprimer/corriger données invalides)"]
-	    Outlier["Outlier Filter<br/>(valeurs aberrantes)"]
-	    Normalizer["Normalizer<br/>(unités/format cohérents)"]
-			boxDB[("Buffer BDD")]
-	    Uploader["⟳ Uploader<br/>(compression, moyennage, envoi)"]
-	    end
-	    majs[Software Updater]
-		end 
-    subgraph Cloud["Cloud"]
-			Save["Save Service<br/>(Sauvegarde en base de données)"]
-			DB[("Measurement DB")]
-			repo[[Software Registry]]
-    end
-  Device -.->|"BLE"|ble
-  ble-->|"Broker message"|Cleaner
-	Cleaner -->|"Broker message"| Normalizer 
-	Normalizer -->|"Broker message"| Outlier 
-	Outlier -.-> boxDB 
-	boxDB <-.-> Uploader
-	Uploader-.->|"HTTPS/REST"| Save
-	Save -.-> DB
-	
-	majs<-.->|"HTTPS/REST"|repo
-```
-[En savoir plus](https://www.notion.so/Diagramme-composants-Data-Pipeline-280b70b82f6b80f48968cb4c271ec0b5)
 
 ## Analyse des risques
 
@@ -84,7 +53,37 @@ sequenceDiagram
 ```
 
 ## Composants logiciels
-
+```mermaid
+graph
+		Device["Montre"]
+		subgraph Boitier["IoT Gateway (Station)"]
+			subgraph softb["Software"]
+			ble["Serveur BLE<br/>réception des message"]
+	    Cleaner["Cleaner<br/>(supprimer/corriger données invalides)"]
+	    Outlier["Outlier Filter<br/>(valeurs aberrantes)"]
+	    Normalizer["Normalizer<br/>(unités/format cohérents)"]
+			boxDB[("Buffer BDD")]
+	    Uploader["⟳ Uploader<br/>(compression, moyennage, envoi)"]
+	    end
+	    majs[Software Updater]
+		end 
+    subgraph Cloud["Cloud"]
+			Save["Save Service<br/>(Sauvegarde en base de données)"]
+			DB[("Measurement DB")]
+			repo[[Software Registry]]
+    end
+  Device -.->|"BLE"|ble
+  ble-->|"Broker message"|Cleaner
+	Cleaner -->|"Broker message"| Normalizer 
+	Normalizer -->|"Broker message"| Outlier 
+	Outlier -.-> boxDB 
+	boxDB <-.-> Uploader
+	Uploader-.->|"HTTPS/REST"| Save
+	Save -.-> DB
+	
+	majs<-.->|"HTTPS/REST"|repo
+```
+Plus d'informations [sur notre page Notion](https://www.notion.so/Diagramme-composants-Data-Pipeline-280b70b82f6b80f48968cb4c271ec0b5)
 ### Pipeline d'ingestion
 Chacun des composants logiciels de la Station est codé en NodeJS car c'est un environnement léger et qui permet un gestion simple des objets, contrairement à java qui aurait été plus lourd à gérer sur une architecture embarquée (à cause de la JVM) et qui est plus verbeux.
 
