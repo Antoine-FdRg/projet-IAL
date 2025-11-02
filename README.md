@@ -142,7 +142,7 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 
 ![](./doc/images/DDD.png)
 
-### **Core Domain**
+### Core Domain
 
 > Domaine médical – cœur de la valeur métier
 
@@ -172,7 +172,6 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 
 ## Contraintes techniques
 
-- Système scalable à l’échelle nationale (≈ 20 000 patients par région).
 - Une station = un patient (relation fixe).
 - Les objets connectés actuels ne sont pas évolutifs (pas de mise à jour firmware).
 - Intégration exclusive de nos propres appareils.
@@ -232,9 +231,11 @@ Le serveur requiert `server.crt` et `server.key` pour démarrer en TLS. Le clien
 
 Une étude approfondie des risques a été établie tout au long du projet: [consulter l'analyse des risques](./doc/RISQUES.md)
 
-## Utilisation du cloud
-
-Retrouvez plus d'informations sur les services cloud [juste ici](./doc/CLOUD.md)
+## Architecture
+Le projet est organisé en trois niveaux d'infrastructure :
+- **Device** : Dispositifs IoT (montres connectées simulées)
+- **Station IoT Gateway** : Station de collecte avec pipeline basée sur un broker NATS et services de traitement, plus d'informations dans la [documentation IoT Gateway](./box/README.md)
+- **Cloud** : Services cloud pour le stockage persistant (bases de données et API), plus d'informations dans la [documentation cloud](./doc/CLOUD.md)
 
 ## Démonstration
 
@@ -254,8 +255,8 @@ En combinant IoT, cloud, et supervision médicale, l’objectif est de réduire 
 
 | Nom             | Prenom   | Description des missions principales                                                                                                      |
 | --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| ALLAIN          | Emma     | Analyse de risques (matrices & bowties), client Nats du boitier, implémentation de la db et de la communication BLE/GATT de l'IoT gateway |
+| ALLAIN          | Emma     | Analyse de risques (matrices & bowties), client Nats du boitier, implémentation de la Buffer DB et de la communication BLE/GATT de l'IoT gateway |
 | BACON           | Roxane   | Analyse de risques (matrices & bowties), réflexion et implémentation de la userDB, documentation et illustration du sujet                 |
-| FADDA RODRIGUEZ | Antoine  | Implémentation de la pipeline, documentation, client Nats du boitier                                                                      |
-| LACROIX         | Baptiste | Implémentation de la pipeline et de l'uploader dans la measurementDB                                                                      |
-| VIDAL           | Théo     | Implémentation de la measurementDB, du système de notifications aux proches, et de la pipeline                                            |
+| FADDA RODRIGUEZ | Antoine  | Implémentation de la pipeline, documentation, broker Nats du boitier                                                                      |
+| LACROIX         | Baptiste | Implémentation de la pipeline et de l'uploader dans la Measurement DB                                                                      |
+| VIDAL           | Théo     | Implémentation de la Measurement DB, du système de notifications aux proches, et de la pipeline                                            |

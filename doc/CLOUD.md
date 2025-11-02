@@ -86,8 +86,14 @@ Le Family Notif Service est responsable de l'envoie des notifications au proche 
 ### Measurement DB
 La Measurement DB est une base de données PostgreSQL avec  l'extension  TimescaleDB, optimisée pour le stockage et la gestion de séries temporelles.
 Elle stocke les mesures de santé envoyées par les Stations, permettant ainsi une analyse efficace et rapide des données pour le suivi de la santé des patients.
+
+En savoir plus sur la MeasurementDB : [+ info](./databases/measurement-db/README.md)
+
 ### User DB
 La User DB est une base de données PostgreSQL qui stocke les informations des utilisateurs : patient, médecin, infirmier, proche, ainsi que les informations des Stations associées aux patients. Elle gère également les relations entre ces entités pour faciliter l'accès et la gestion des données utilisateur.
+
+En savoir plus sur la User DB : [+ info](./databases/user-db/README.md)
+
 ### Interface web
 L'interface web permet aux médecins et infirmiers de consulter les dashboards de suivi de santé des patients. Elle communique avec la User DB pour l'authentification et la récupération des informations utilisateur, ainsi qu'avec la Measurement DB pour afficher les données de santé pertinentes. Cette interface est développée en Next.js, ce framework React permet d'utiliser sa librairie d'authentification NextAuth.js pour gérer facilement l'authentification des utilisateurs. Enfin, Next.js supporte le déploiement serverless, diminuant les ressources nécessaires pour héberger l'interface web.
 

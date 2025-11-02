@@ -1,17 +1,7 @@
-# projet-IAL
-## Analyse des risques
-L'intégralité de l'analyse des risques est disponible dans le document [Analyse des risques](doc/RISQUES.md).
-
-## Architecture
-Le projet est organisé en trois niveaux d'infrastructure :
-- **Cloud** : Services cloud pour le stockage persistant (bases de données et API)
-- **Station** : Station de collecte avec pipeline NATS et services de traitement
-- **Device** : Dispositifs IoT (montres connectées simulées)
-
-## Configuration
+# Configuration
 Le projet utilise trois fichiers de configuration d'environnement à la racine :
 
-### `.env.cloud`
+## `.env.cloud`
 Contient la configuration des services cloud :
 - **Measurement DB** : Base de données TimescaleDB pour les mesures
   - `MEASUREMENT_DB_POSTGRES_DB_NAME`, `MEASUREMENT_DB_POSTGRES_USER`, `MEASUREMENT_DB_POSTGRES_PASSWORD`
@@ -21,7 +11,7 @@ Contient la configuration des services cloud :
 - **Save Service** : Configuration de l'API HTTP
   - `SAVE_SERVICE_PORT`, `SAVE_SERVICE_NODE_ENV`, `SAVE_SERVICE_DB_POOL_MIN`, `SAVE_SERVICE_DB_POOL_MAX`
 
-### `.env.station`
+## `.env.station`
 Contient la configuration de la station de collecte :
 - **Broker NATS** : `NATS_SERVER` - URL du broker NATS
 - **Intervalles de traitement** : 
@@ -33,7 +23,7 @@ Contient la configuration de la station de collecte :
 - **Configuration box** : `BOX_UUID` - Identifiant unique de la station
 - **GATT Server** : `GATT_SERVER_PORT` - Port du serveur GATT Bluetooth
 
-### `.env.device`
+## `.env.device`
 Contient la configuration des dispositifs IoT :
 - **Mock Watch** : Configuration de la montre connectée simulée
   - `ENDPOINT_URL` - URL du serveur GATT
