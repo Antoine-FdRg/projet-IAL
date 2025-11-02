@@ -243,7 +243,6 @@ Dans le cadre du POC présenté en séance, certaines adaptations ont été appo
 - Les appareils physiques (comme les montres connectées) ont été simulés via une API REST. Cette API envoie des données en conditions proches du réel, telles que le pouls, le poids, le nombre de pas et la température, tout en intégrant volontairement divers types d’erreurs (valeurs incohérentes, unités incorrectes, messages malformés) pour tester par la suite notre pipeline et la robustesse de nos systèmes.
 
 - Le serveur de communication Bluetooth prévu initialement a été remplacé par un serveur REST, facilitant les échanges et la démo sans dépendance matérielle.
-
 - Dans la version de démonstration, la notification de l’état de santé d’un patient à ses proches ne passe pas par WhatsApp comme spécifié à l’origine, mais par Discord.
 
 ## Conclusion
@@ -253,10 +252,10 @@ En combinant IoT, cloud, et supervision médicale, l’objectif est de réduire 
 
 ## Contribution globale de l'équipe
 
-| Nom             | Prenom   | Description des missions principales                                                                                                         |
-| --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| ALLAIN          | Emma     | Analyse de risques (matrices & bowties), implémentation de la db, du client Nats du boitier et de la communication BLE/GATT de l'IoT gateway | implémentation mock objets connectés |
-| BACON           | Roxane   | Analyse de risques (matrices & bowties), réflexion et implémentation de la userDB, documentation et illustration du sujet                    |
-| FADDA RODRIGUEZ | Antoine  | Implémentation de la pipeline, documentation, client Nats du boitier                                                                         |
-| LACROIX         | Baptiste | Implémentation de la pipeline et de l'uploader dans la measurementDB                                                                         |
-| VIDAL           | Théo     | Implémentation de la measurementDB, du système de notifications aux proches, et de la pipeline                                               |
+| Nom             | Prenom   | Description des missions principales                                                                                                      |
+| --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| ALLAIN          | Emma     | Analyse de risques (matrices & bowties), client Nats du boitier, implémentation de la db et de la communication BLE/GATT de l'IoT gateway |
+| BACON           | Roxane   | Analyse de risques (matrices & bowties), réflexion et implémentation de la userDB, documentation et illustration du sujet                 |
+| FADDA RODRIGUEZ | Antoine  | Implémentation de la pipeline, documentation, client Nats du boitier                                                                      |
+| LACROIX         | Baptiste | Implémentation de la pipeline et de l'uploader dans la measurementDB                                                                      |
+| VIDAL           | Théo     | Implémentation de la measurementDB, du système de notifications aux proches, et de la pipeline                                            |
