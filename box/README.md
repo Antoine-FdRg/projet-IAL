@@ -30,6 +30,8 @@ graph
 	
 	majs<-.->|"HTTPS/REST"|repo
 ```
+[En savoir plus](https://www.notion.so/Diagramme-composants-Data-Pipeline-280b70b82f6b80f48968cb4c271ec0b5)
+
 ## Analyse des risques
 
 ### 1. Perte de données
@@ -106,3 +108,73 @@ Le broker NATS est utilisé pour faire transiter les messages entre les différe
 ### Software Updater
 Le Software Updater est un service qui vérifie quotidiennement la présence de nouvelles versions du logiciel de la Station dans le Software Registry du cloud. Si une nouvelle version est disponible, il télécharge l'image docker correspondante et met à jour le composant concerné. Il peut, en cas d'erreur, revenir à la version précédente pour assurer la continuité du service.
 Il sera codé en Shell et lancé par une tâche cron quotidienne.
+
+### Données échangées
+
+#### Serveur BLE -> Cleaner
+
+Queue : MEASUREMENT.to_clean
+
+```json
+{
+    "type" : string
+    "value" : number,
+    "unit" : string,
+    "timestamp": string
+}
+```
+```
+
+#### Cleaner -> Normalizer
+
+Queue : MEASUREMENT.to_normalize
+
+```json
+{
+    "type" : string
+    "value" : number,
+    "unit" : string,
+    "timestamp": string
+}
+```
+
+#### Normalizer -> Outlier filter
+
+Queue : MEASUREMENT.to_outlierfilter
+
+```json
+{
+    "type" : string
+    "value" : number,
+    "unit" : string,
+    "timestamp": string
+}
+```
+#### Outlier filter -> Buffer BDD
+
+```json
+{
+    "type" : string
+    "value" : number,
+    "unit" : string,
+    "timestamp": string
+}
+```
+
+#### Uploader -> Save Service
+Via appel REST HTTPS : POST /measurements
+
+```json
+{
+  "boxId": string,
+  "dataList": [
+        {
+            "type" : string,
+            "value" : number,
+            "unit" : string,
+            "timestamp": string
+        },
+        ...
+    ]
+}
+```
