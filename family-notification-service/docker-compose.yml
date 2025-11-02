@@ -6,8 +6,8 @@ services:
     image: ial/family-notification-service:latest
     environment:
       # Cron Configuration
-      - CRON_SCHEDULE=${CRON_SCHEDULE:-*/10 * * * *}
-      - RUN_ON_STARTUP=${RUN_ON_STARTUP:-false}
+      - CRON_SCHEDULE=${CRON_SCHEDULE}
+      - RUN_ON_STARTUP=${RUN_ON_STARTUP}
 
       # Discord Configuration
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
@@ -17,18 +17,18 @@ services:
       - ANALYZE_SERVICE_TIMEOUT=10000
 
       # User Database Configuration
-      - USER_DB_HOST=user-db
-      - USER_DB_PORT=5432
-      - USER_DB_NAME=user
-      - USER_DB_USER=user
-      - USER_DB_PASSWORD=user_password
+      - USER_DB_HOST=${USER_DB_HOST_NAME}
+      - USER_DB_PORT=${USER_DB_POSTGRES_PORT:-5432}
+      - USER_DB_NAME=${USER_DB_POSTGRES_DB_NAME}
+      - USER_DB_USER=${USER_DB_POSTGRES_USER}
+      - USER_DB_PASSWORD=${USER_DB_POSTGRES_PASSWORD}
 
       # Measurement Database Configuration
-      - MEASUREMENT_DB_HOST=measurement-db
-      - MEASUREMENT_DB_PORT=5432
-      - MEASUREMENT_DB_NAME=measurement_db
-      - MEASUREMENT_DB_USER=ial_user
-      - MEASUREMENT_DB_PASSWORD=ial_password
+      - MEASUREMENT_DB_HOST=${MEASUREMENT_DB_HOST_NAME}
+      - MEASUREMENT_DB_PORT=${MEASUREMENT_DB_POSTGRES_PORT:-5432}
+      - MEASUREMENT_DB_NAME=${MEASUREMENT_DB_POSTGRES_DB_NAME}
+      - MEASUREMENT_DB_USER=${MEASUREMENT_DB_POSTGRES_USER}
+      - MEASUREMENT_DB_PASSWORD=${MEASUREMENT_DB_POSTGRES_PASSWORD}
     # Dependencies managed externally - services already running
     # depends_on is commented out since services are in other docker-compose files
     networks:
