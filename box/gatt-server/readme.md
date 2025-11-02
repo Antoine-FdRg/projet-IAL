@@ -5,7 +5,7 @@ L’image de ce service est intégrée dans le **docker-compose de la montre con
 
 ## 🛰️ Différence architecture/POC
 
-Dans l’architecture **initialement prévue**, ce composant devait être un serveur **Bluetooth GATT** chargé de recevoir les données des objets connectés (montres, capteurs, etc.) via une **communication BLE**.
+Dans l’architecture **initialement prévue**, ce composant devait être un serveur **Bluetooth Low Energy GATT** chargé de recevoir les données des objets connectés (montres, capteurs, etc.) via une **communication BLE**.
 Cependant, dans le cadre de ce POC, nous avons choisi d’implémenter **une version REST** du serveur afin de pouvoir tester et valider les échanges sans dépendre de matériel physique (comme un Raspberry Pi ou un dongle Bluetooth).
 
 ## 🚀 Fonctionnalités

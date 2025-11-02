@@ -23,7 +23,10 @@ Si malgré cela des mesures sont victimes d'un ransomware, elles seront racheté
 Pour éviter la réception de fausses données, une mécanisme de signature des échanges Bluetooth est mis en place. Chaque message envoyé à la Station est signé numériquement, et la Station vérifie la signature avant de traiter le message. Cela permet de s'assurer que les données proviennent bien d'une source authentique et n'ont pas été altérées en cours de route.
 
 ## Fonctionnement général
+À l'aide de conteneurs Docker, la Station exécute plusieurs services logiciels qui forment une pipeline d'ingestion des données reçues des capteurs via Bluetooth Low Energy (BLE).
+De cette manière, chaque service est isolé dans son propre conteneur, ce qui facilite la gestion, la mise à jour et le déploiement des différents composants.
 ### Diagramme de séquence de réception d’un message
+Cet évènement est déclenché à chaque réception d’un message BLE par le serveur BLE de la Station.
 ```mermaid
 sequenceDiagram
   participant m as Capteur
@@ -38,6 +41,7 @@ sequenceDiagram
   iotgw ->>-iotgw : stockage Buffer BDD
 ```
 ### Diagramme de séquence d'upload d’un batch de mesure
+Cet évènement est déclenché toutes les 30 minutes par le service Uploader de la Station. La fréquence d'upload n'est initialement pas plus importante car le système n'est pas conçu pour des mesures et analyse en temps réel, mais pour de la collecte de données environnementales sur le moyen/long terme.
 ```mermaid
 sequenceDiagram
   participant m as Capteur
@@ -108,9 +112,9 @@ Le broker NATS est utilisé pour faire transiter les messages entre les différe
 Le Software Updater est un service qui vérifie quotidiennement la présence de nouvelles versions du logiciel de la Station dans le Software Registry du cloud. Si une nouvelle version est disponible, il télécharge l'image docker correspondante et met à jour le composant concerné. Il peut, en cas d'erreur, revenir à la version précédente pour assurer la continuité du service.
 Il sera codé en Shell et lancé par une tâche cron quotidienne.
 
-### Données échangées
+## Données échangées
 
-#### Serveur BLE -> Cleaner
+### Serveur BLE -> Cleaner
 
 Queue : MEASUREMENT.to_clean
 
@@ -122,9 +126,8 @@ Queue : MEASUREMENT.to_clean
     "timestamp": string
 }
 ```
-```
 
-#### Cleaner -> Normalizer
+### Cleaner -> Normalizer
 
 Queue : MEASUREMENT.to_normalize
 
@@ -137,7 +140,7 @@ Queue : MEASUREMENT.to_normalize
 }
 ```
 
-#### Normalizer -> Outlier filter
+### Normalizer -> Outlier filter
 
 Queue : MEASUREMENT.to_outlierfilter
 
@@ -149,7 +152,7 @@ Queue : MEASUREMENT.to_outlierfilter
     "timestamp": string
 }
 ```
-#### Outlier filter -> Buffer BDD
+### Outlier filter -> Buffer BDD
 
 ```json
 {
@@ -160,7 +163,7 @@ Queue : MEASUREMENT.to_outlierfilter
 }
 ```
 
-#### Uploader -> Save Service
+### Uploader -> Save Service
 Via appel REST HTTPS : POST /measurements
 
 ```json

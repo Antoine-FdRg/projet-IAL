@@ -47,6 +47,11 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 4. Installation sur une partition secondaire (avec backup).
 5. Rollback automatique en cas d’échec au démarrage.
 
+### Contraintes techniques
+
+- Une station = un patient (relation fixe).
+- Les objets connectés actuels ne sont pas évolutifs (pas de mise à jour firmware).
+- Intégration exclusive de nos propres appareils.
 
 ## Liste des fonctionnalités principales
 
@@ -83,7 +88,6 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 - Supervision des instances et objets IoT.
 - Création / modification des instances de déploiement (stack complète par région).
 - Déploiement des mises à jour globales (backend et stations).
-
 
 ## User Stories
 
@@ -138,7 +142,7 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 > afin de **garantir la mise à jour des systèmes et leur sécurité**
 
 
-## Découpage en domaines (DDD)
+## Découpage en domaines
 
 ![](./doc/images/DDD.png)
 
@@ -169,62 +173,6 @@ Les stations disposent d’un mécanisme de mise à jour automatique sécurisé 
 - Envoi de messages WhatsApp
 - Les appareils connectés (les montres sont existantes)
 
-## Contraintes techniques
-
-- Une station = un patient (relation fixe).
-- Les objets connectés actuels ne sont pas évolutifs (pas de mise à jour firmware).
-- Intégration exclusive de nos propres appareils.
-
-
-## Bases de données
-
-En savoir plus sur la measurementDB : [+ info](./databases/measurement-db/README.md)
-
-En savoir plus sur la userDB : [+ info](./databases/user-db/README.md)
-
-## Sécurité
-
-### Authentification Save Service
-
-Le save-service utilise des tokens Bearer pour authentifier les boitiers :
-
-- Tokens stockés en SHA-256 dans la table `boxes`
-- Header requis : `Authorization: Bearer <token>`
-- Tokens de test : `box1-secret-token`, `box2-secret-token`
-
-#### Exemple de génération de certificats
-
-- Créer une clé privée CA
-
-```shell
-openssl genrsa -out ca.key 4096
-```
-
-- Créer un certificat CA auto-signé
-
-```shell
-openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "/CN=MyNatsCA"
-```
-
-- Créer une clé serveur
-
-```shell
-openssl genrsa -out server.key 2048
-```
-
-- CSR (demande de signature) selon le hostname du broker
-
-```shell
-openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
-```
-
-- Signer le certificat serveur avec la CA
-
-```shell
-openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
-```
-
-Le serveur requiert `server.crt` et `server.key` pour démarrer en TLS. Le client requiert `ca.pem` pour vérifier l'identité du broker lorsqu'il s'y connecte
 
 ## Analyse des risques
 
@@ -253,7 +201,7 @@ En combinant IoT, cloud, et supervision médicale, l’objectif est de réduire 
 ## Contribution globale de l'équipe
 
 | Nom             | Prenom   | Description des missions principales                                                                                                      |
-| --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+|  | -- | -- |
 | ALLAIN          | Emma     | Analyse de risques (matrices & bowties), client Nats du boitier, implémentation de la Buffer DB et de la communication BLE/GATT de l'IoT gateway |
 | BACON           | Roxane   | Analyse de risques (matrices & bowties), réflexion et implémentation de la userDB, documentation et illustration du sujet                 |
 | FADDA RODRIGUEZ | Antoine  | Implémentation de la pipeline, documentation, broker Nats du boitier                                                                      |

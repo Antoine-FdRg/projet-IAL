@@ -74,7 +74,7 @@ L'Analyse Service est responsable de l'analyse des mesures stockées dans la Mea
       
         ```json
         {
-          "requireAttention" : boolean,
+          "severity" : CRITICAL | HIGH | MEDIUM | LOW
           "reason" : string | null
         }
         ```

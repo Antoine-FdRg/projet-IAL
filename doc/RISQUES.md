@@ -17,7 +17,7 @@ Le save-service utilise des tokens Bearer pour authentifier les boitiers :
 - Header requis : `Authorization: Bearer <token>`
 - Tokens de test : `box1-secret-token`, `box2-secret-token`
 
-#### Exemple de génération de certificats
+### Exemple de génération de certificats pour mettre en place HTTPS
 
 - Créer une clé privée CA
 
@@ -37,10 +37,10 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "
 openssl genrsa -out server.key 2048
 ```
 
-- CSR (demande de signature) selon le hostname du broker
+- CSR (demande de signature) selon le hostname du serveur
 
 ```shell
-openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
+openssl req -new -key server.key -out server.csr -subj "/CN=domaine.exemple.com"
 ```
 
 - Signer le certificat serveur avec la CA
