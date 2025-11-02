@@ -1,6 +1,6 @@
 # Family Notification Service
 
-Service cron qui envoie des notifications Discord aux membres de la famille pour les informer de l'état de santé de leurs proches.
+Service cron qui envoie des notifications aux membres de la famille pour les informer de l'état de santé de leurs proches.
 
 ## Vue d'ensemble
 
@@ -8,7 +8,47 @@ Le `family-notification-service` est un service Node.js/TypeScript avec cron qui
 1. S'exécute périodiquement (par défaut toutes les 10 minutes, configurable)
 2. Récupère tous les patients ayant au moins un **proche** dans user-db
 3. Appelle l'endpoint `/analyse/:stationId/family` de l'analyze-service pour chaque patient
-4. Envoie un message Discord simple avec emoji pour chaque patient
+4. Envoie une notification personnalisée pour chaque patient
+
+## 📱 Discord vs WhatsApp : Choix d'implémentation
+
+### Architecture cible (Production)
+
+L'architecture finale prévue utilise **WhatsApp Business API** pour envoyer des messages personnalisés aux numéros de téléphone des proches enregistrés dans la base de données (table `externe` avec champ `tel`).
+
+**Avantages de WhatsApp :**
+- ✅ Canal de communication familier et universellement utilisé
+- ✅ Messages personnalisés par proche (un message par numéro)
+- ✅ Notification push sur mobile
+- ✅ Historique de conversation préservé
+
+### Implémentation actuelle (Démonstration)
+
+Pour la démonstration, nous utilisons **Discord Webhooks** à la place de WhatsApp.
+
+**Raison du choix :**
+
+Meta impose des restrictions strictes sur l'utilisation de WhatsApp Business API :
+- 🔒 **Numéros vérifiés uniquement** : Il est impossible d'envoyer des messages à des numéros arbitraires sans validation préalable
+- 📝 **Inscription manuelle requise** : Chaque numéro de test doit être explicitement enregistré et vérifié dans la console Meta
+- ⏱️ **Processus de validation long** : La vérification des numéros et l'accès à l'API nécessitent plusieurs étapes administratives
+- 🎯 **Complexité disproportionnée** : Pour une démonstration technique, le coût d'intégration (inscription de numéros de test, validation Meta, gestion des tokens) est trop important par rapport à la valeur ajoutée
+
+**Discord comme substitut de démonstration :**
+- ✅ Configuration immédiate (webhook URL)
+- ✅ Pas de restrictions sur les destinataires
+- ✅ Démontre le concept de notification asynchrone
+- ✅ Format de message identique (texte + emojis)
+
+### Migration future vers WhatsApp
+
+Lorsque le projet passera en production avec des utilisateurs réels, le service pourra être adapté en :
+1. Remplaçant `discordNotifier.ts` par `whatsappNotifier.ts`
+2. Utilisant l'API WhatsApp Business (Cloud API ou On-Premise)
+3. Récupérant les numéros de téléphone depuis la table `externe` (via jointure avec `rel_patient_externe`)
+4. Envoyant un message personnalisé par proche (au lieu d'un message groupé Discord)
+
+Le reste de l'architecture (cron, analyse, base de données) reste identique.
 
 ## Utilisation
 
