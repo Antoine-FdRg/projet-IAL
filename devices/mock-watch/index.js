@@ -10,29 +10,42 @@ let stepCounter = 0;
 let lastStepTick = Date.now();
 let currentWeight = Number(process.env.INIT_WEIGHT_KG || 70.5);
 
-const measurementTypes = [
-  {
-    type: "temperature",
-    units: ["°C", "°F"],
-    valueRange: { min: -10, max: 50 },
-    nonsenseRange: { min: -273, max: 1000 },
-  },
-  {
-    type: "weight",
-    units: ["lbs", "kg"],
-    valueRange: { min: 0, max: 200 },
-    nonsenseRange: { min: -50, max: 5000 },
-  },
-  {
-    type: "pulse",
-    units: ["bps", "bpm"],
-    valueRange: { min: 60, max: 120 },
-    nonsenseRange: { min: 0, max: 1000 },
-  },
+// Compteur global pour cycler entre les scénarios
+let scenarioCounter = 0;
+
+// Types de scénarios pour démonstration de la pipeline
+const SCENARIOS = {
+  NORMAL: 'normal',           // 70% - Données valides normales
+  NORMALIZE: 'normalize',     // 15% - Données nécessitant normalisation
+  OUTLIER_VALID: 'outlier_valid',  // 8% - Outliers limites mais valides
+  OUTLIER_REJECT: 'outlier_reject', // 3% - Outliers rejetés
+  MALFORMED: 'malformed',     // 2% - Données malformées
+  ERROR: 'error'              // 2% - Erreurs simulées
+};
+
+// Distribution des scénarios (total = 100)
+const SCENARIO_DISTRIBUTION = [
+  ...Array(70).fill(SCENARIOS.NORMAL),
+  ...Array(15).fill(SCENARIOS.NORMALIZE),
+  ...Array(8).fill(SCENARIOS.OUTLIER_VALID),
+  ...Array(3).fill(SCENARIOS.OUTLIER_REJECT),
+  ...Array(2).fill(SCENARIOS.MALFORMED),
+  ...Array(2).fill(SCENARIOS.ERROR),
 ];
 
+function getNextScenario() {
+  const scenario = SCENARIO_DISTRIBUTION[scenarioCounter % SCENARIO_DISTRIBUTION.length];
+  scenarioCounter++;
+  return scenario;
+}
+
+function rnd(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 function maybeSimulatedError() {
-  if (Math.random() < 0.2) {
+  const scenario = getNextScenario();
+  if (scenario === SCENARIOS.ERROR) {
     const errorMessages = [
       "Bluetooth connection lost",
       "Device timeout",
@@ -49,25 +62,156 @@ function maybeSimulatedError() {
   return null;
 }
 
-function rnd(min, max) {
-  return Math.random() * (max - min) + min;
+function generateScenarioBasedMeasurement(targetType) {
+  const scenario = getNextScenario();
+
+  // Gestion des erreurs et malformations
+  if (scenario === SCENARIOS.ERROR) {
+    return maybeSimulatedError();
+  }
+
+  if (scenario === SCENARIOS.MALFORMED) {
+    return generateMalformedMeasurement(targetType);
+  }
+
+  // Génération de mesures valides selon le scénario
+  switch (scenario) {
+    case SCENARIOS.NORMAL:
+      return generateNormalMeasurement(targetType);
+
+    case SCENARIOS.NORMALIZE:
+      return generateNormalizableMeasurement(targetType);
+
+    case SCENARIOS.OUTLIER_VALID:
+      return generateOutlierValidMeasurement(targetType);
+
+    case SCENARIOS.OUTLIER_REJECT:
+      return generateOutlierRejectMeasurement(targetType);
+
+    default:
+      return generateNormalMeasurement(targetType);
+  }
 }
 
-function randomMeasurementFor(targetType) {
-  const conf = measurementTypes.find(m => m.type === targetType);
-  if (!conf) throw new Error(`Unknown measurement type: ${targetType}`);
+// Données normales réalistes
+function generateNormalMeasurement(type) {
+  const configs = {
+    temperature: { value: rnd(36, 38), unit: '°C' },
+    weight: { value: rnd(68, 72), unit: 'kg' },
+    pulse: { value: rnd(60, 90), unit: 'bpm' },
+  };
 
-  const unit = conf.units[Math.floor(Math.random() * conf.units.length)];
-  const isNonsenseValue = Math.random() < 0.15;
-  const range = isNonsenseValue ? conf.nonsenseRange : conf.valueRange;
-  const value = Math.round(rnd(range.min, range.max) * 100) / 100;
+  const config = configs[type];
+  if (!config) return null;
 
   return {
-    type: targetType,
-    value,
-    unit,
+    type,
+    value: Math.round(config.value * 100) / 100,
+    unit: config.unit,
     timestamp: new Date().toISOString(),
   };
+}
+
+// Données nécessitant normalisation (lbs→kg, °F→°C, bps→bpm)
+function generateNormalizableMeasurement(type) {
+  const configs = {
+    temperature: { value: rnd(96, 100), unit: '°F' }, // → 35.5-37.7°C
+    weight: { value: rnd(150, 160), unit: 'lbs' },    // → 68-72 kg
+    pulse: { value: rnd(1, 1.5), unit: 'bps' },       // → 60-90 bpm
+  };
+
+  const config = configs[type];
+  if (!config) return generateNormalMeasurement(type);
+
+  return {
+    type,
+    value: Math.round(config.value * 100) / 100,
+    unit: config.unit,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// Outliers limites mais valides (à la frontière des seuils)
+function generateOutlierValidMeasurement(type) {
+  const configs = {
+    temperature: [
+      { value: 32.5, unit: '°C' },  // Limite basse
+      { value: 41.5, unit: '°C' },  // Limite haute
+    ],
+    weight: [
+      { value: 20, unit: 'kg' },    // Limite basse
+      { value: 120, unit: 'kg' },   // Valeur haute mais valide
+    ],
+    pulse: [
+      { value: 45, unit: 'bpm' },   // Bradycardie
+      { value: 245, unit: 'bpm' },  // Tachycardie extrême mais valide
+    ],
+  };
+
+  const options = configs[type];
+  if (!options) return generateNormalMeasurement(type);
+
+  const selected = options[Math.floor(Math.random() * options.length)];
+  return {
+    type,
+    value: selected.value,
+    unit: selected.unit,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// Outliers rejetés (hors des seuils du filtre)
+function generateOutlierRejectMeasurement(type) {
+  const configs = {
+    temperature: [
+      { value: 25, unit: '°C' },    // < 32°C → rejeté
+      { value: 50, unit: '°C' },    // > 42°C → rejeté
+    ],
+    weight: [
+      { value: 5, unit: 'kg' },     // < 15 kg → rejeté
+      { value: 600, unit: 'kg' },   // > 500 kg → rejeté
+    ],
+    pulse: [
+      { value: 300, unit: 'bpm' },  // > 250 bpm → rejeté
+      { value: 400, unit: 'bpm' },  // > 250 bpm → rejeté
+    ],
+  };
+
+  const options = configs[type];
+  if (!options) return generateNormalMeasurement(type);
+
+  const selected = options[Math.floor(Math.random() * options.length)];
+  return {
+    type,
+    value: selected.value,
+    unit: selected.unit,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// Données malformées (pour tester le cleaner)
+function generateMalformedMeasurement(type) {
+  const malformations = [
+    // value manquant ou invalide
+    () => ({ type, unit: 'kg', timestamp: new Date().toISOString() }),
+    () => ({ type, value: null, unit: 'kg', timestamp: new Date().toISOString() }),
+    () => ({ type, value: 'invalid', unit: 'kg', timestamp: new Date().toISOString() }),
+
+    // type manquant ou invalide
+    () => ({ value: 70, unit: 'kg', timestamp: new Date().toISOString() }),
+    () => ({ type: '', value: 70, unit: 'kg', timestamp: new Date().toISOString() }),
+    () => ({ type: 123, value: 70, unit: 'kg', timestamp: new Date().toISOString() }),
+
+    // timestamp invalide
+    () => ({ type, value: 70, unit: 'kg', timestamp: 'invalid-date' }),
+    () => ({ type, value: 70, unit: 'kg', timestamp: '' }),
+
+    // unit manquant
+    () => ({ type, value: 70, timestamp: new Date().toISOString() }),
+  ];
+
+  const malformation = malformations[Math.floor(Math.random() * malformations.length)];
+  return malformation();
 }
 
 // steps reste cumulatif (logique “montre”), mais on peut toujours injecter un peu d’aléa
@@ -82,11 +226,19 @@ function genSteps() {
   return { type: 'steps', value: stepCounter, unit: 'steps', timestamp: new Date().toISOString() };
 }
 
-// poids: on garde une légère dérive réaliste (au-delà de la logique “random” brute)
-function genWeightDrifted() {
-  const drift = (Math.random() - 0.5) * 0.04; // ±40g
-  currentWeight = +(currentWeight + drift).toFixed(2);
-  return { type: 'weight', value: currentWeight, unit: 'kg', timestamp: new Date().toISOString() };
+// Poids: version scénarisée avec légère dérive pour les mesures normales
+function genWeightScenarioBased() {
+  const measurement = generateScenarioBasedMeasurement('weight');
+
+  // Si c'est une mesure normale, on peut appliquer la dérive
+  if (measurement && measurement.unit === 'kg' && measurement.value >= 60 && measurement.value <= 80) {
+    const drift = (Math.random() - 0.5) * 0.04; // ±40g
+    currentWeight = +(currentWeight + drift).toFixed(2);
+    return { type: 'weight', value: currentWeight, unit: 'kg', timestamp: new Date().toISOString() };
+  }
+
+  // Sinon, on utilise la mesure scénarisée directement
+  return measurement;
 }
 
 // envoi HTTP
@@ -108,7 +260,7 @@ async function postMeasurement(measurement) {
 
 // boucle 30s : temperature, weight, steps
 async function sendOthersBatch() {
-  // erreur Bluetooth simulée (on logge, on n’envoie pas car le serveur refuserait)
+  // erreur Bluetooth simulée
   const errEvt = maybeSimulatedError();
   if (errEvt) {
     await postMeasurement(errEvt);
@@ -116,23 +268,28 @@ async function sendOthersBatch() {
     return;
   }
 
-  // temperature selon la logique randomMeasurementFor
-  const temp = randomMeasurementFor('temperature');
+  // température selon le système de scénarios
+  const temp = generateScenarioBasedMeasurement('temperature');
 
-  // weight : on mélange réalisme (drift) et cas “nonsense” occasionnels
-  const useDrift = Math.random() < 0.7;
-  const weight = useDrift ? genWeightDrifted() : randomMeasurementFor('weight');
+  // poids avec dérive pour les mesures normales
+  const weight = genWeightScenarioBased();
 
-  // steps cumulatif
+  // steps cumulatif (conservé tel quel)
   const steps = genSteps();
 
-  // envois sérialisés (peut être parallélisé si tu veux)
-  for (const m of [temp, weight, steps]) await postMeasurement(m);
+  // envois sérialisés
+  for (const m of [temp, weight, steps]) {
+    if (m) {
+      await postMeasurement(m);
+    } else {
+      console.warn(`[SKIP] Measurement skipped (null or malformed)`);
+    }
+  }
 }
 
 // boucle 5s : pulse
 async function sendPulse() {
-  // erreur Bluetooth simulée (non envoyée)
+  // erreur Bluetooth simulée
   const errEvt = maybeSimulatedError();
   if (errEvt) {
     await postMeasurement(errEvt);
@@ -140,8 +297,12 @@ async function sendPulse() {
     return;
   }
 
-  const pulse = randomMeasurementFor('pulse');
-  await postMeasurement(pulse);
+  const pulse = generateScenarioBasedMeasurement('pulse');
+  if (pulse) {
+    await postMeasurement(pulse);
+  } else {
+    console.warn(`[SKIP] Pulse measurement skipped (null or malformed)`);
+  }
 }
 
 console.log(`▶ Mock Watch — ${SOURCE_ID}`);
