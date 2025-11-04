@@ -50,6 +50,30 @@ Ce script démarre le projet docker compose `ial-station` et le network `station
 ./stop-all.sh
 ```
 
+## Mock Watch - Simulateur de montre connectée
+
+Simulateur générant des données de test pour démontrer le fonctionnement de la pipeline (cleaner, normalizer, outlier-filter).
+
+### Utilisation
+
+```bash
+cd devices/mock-watch
+npm install
+npm run dev
+```
+
+### Système de scénarios
+
+Le mock-watch génère différents types de données selon une distribution cyclique prédéfinie :
+- **70% Données normales** : Valeurs physiologiques réalistes (36-38°C, 68-72 kg, 60-90 bpm)
+- **15% Normalisation** : Données en °F, lbs, bps nécessitant conversion
+- **8% Outliers valides** : Valeurs extrêmes mais acceptables (32.5-41.5°C, 20-120 kg, 45-245 bpm)
+- **3% Outliers rejetés** : Hors limites pour tester le filtre (<32°C, >500 kg, >250 bpm)
+- **2% Données malformées** : Champs manquants/invalides pour tester le cleaner
+- **2% Erreurs Bluetooth** : Messages d'erreur simulés
+
+**Intervalles** : Pulse toutes les 5s, autres mesures toutes les 15s
+
 ## La pipeline
 [Architecture de la pipeline](https://www.notion.so/Diagramme-composants-Data-Pipeline-280b70b82f6b80f48968cb4c271ec0b5)
 ### Données échangées
