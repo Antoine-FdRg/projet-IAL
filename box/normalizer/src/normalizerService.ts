@@ -58,8 +58,8 @@ const normalizeMeasurementLogic = (measurement: RawMeasurement): RawMeasurement 
                 normalizedUnit = 'kg';
                 console.log(`[${new Date().toISOString()}] - Normalized lbs to kg`);
                 break;
-            case '°f':
-            case 'f':
+            case '°F':
+            case 'F':
                 // https://www.thoughtco.com/fahrenheit-to-celsius-formula-609230
                 normalizedValue = ((measurement.value - 32) * 5) / 9; // °F to °C
                 normalizedUnit = '°C';
