@@ -1,7 +1,7 @@
 services:
   normalizer:
     image: ial/normalizer
-    container_name: normalizer
+    container_name: normalizer-${STATION_NUMBER}
     command: ["node", "dist/main.js"]
     depends_on:
       - setup-broker
@@ -13,4 +13,5 @@ services:
       - station-network
 networks:
   station-network:
+    name: ${STATION_NETWORK}
     driver: bridge

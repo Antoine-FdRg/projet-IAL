@@ -4,7 +4,7 @@ echo "🚀 Starting station services..."
 
 echo "Starting Buffer DB..."
 
-docker-compose -p ial-station -f box/infra/mongo/docker-compose.yml up -d
+docker-compose -p ial-station --env-file .env.station -f box/infra/mongo/docker-compose.yml up -d
 
 echo "✅ Buffer DB started successfully"
 
@@ -14,7 +14,7 @@ sleep 5
 
 echo "Testing Buffer DB connection..."
 
-docker exec buffer-db mongosh --quiet --eval 'db.getSiblingDB("messagesdb").auth("app", "root"); print("Connection successful!")' 2>&1
+docker exec buffer-db-1 mongosh --quiet --eval 'db.getSiblingDB("messagesdb").auth("app", "root"); print("Connection successful!")' 2>&1
 
 if [ $? -eq 0 ]; then
   echo "✅ Buffer DB connection successful"

@@ -1,7 +1,7 @@
 services:
   outlier-filter:
     image: ial/outlier-filter
-    container_name: outlier-filter
+    container_name: outlier-filter-${STATION_NUMBER}
     command: ["node", "dist/main.js"]
     depends_on:
       - setup-broker
@@ -25,4 +25,5 @@ services:
 
 networks:
   station-network:
+    name: ${STATION_NETWORK}
     driver: bridge
