@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   analyze-service:
     container_name: analyze-service

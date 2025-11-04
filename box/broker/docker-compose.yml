@@ -4,6 +4,8 @@ services:
     hostname: nats-broker
     container_name: nats-broker
     command: ["-js"]
+    ports:
+      - "4222:4222"
     networks:
       - station-network
 

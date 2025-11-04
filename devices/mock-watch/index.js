@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'http://localhost:2000/ingest';
-const OTHERS_INTERVAL_MS = Number(process.env.SEND_INTERVAL_MS || 30000); 
+const OTHERS_INTERVAL_MS = Number(process.env.SEND_INTERVAL_MS || 15000); 
 const PULSE_INTERVAL_MS = Number(process.env.PULSE_INTERVAL_MS || 5000);   
 const SOURCE_ID = process.env.SOURCE_ID || 'mock-watch-1';
 const DEVICE_TYPE = process.env.DEVICE_TYPE || 'watch';
@@ -111,7 +111,9 @@ async function sendOthersBatch() {
   // erreur Bluetooth simulée (on logge, on n’envoie pas car le serveur refuserait)
   const errEvt = maybeSimulatedError();
   if (errEvt) {
-    console.warn(`[SIM ERR] ${errEvt.error} @ ${errEvt.timestamp} (non envoyé)`);
+    await postMeasurement(errEvt);
+    console.warn(`[SIM ERR] ${errEvt.error} @ ${errEvt.timestamp}`);
+    return;
   }
 
   // temperature selon la logique randomMeasurementFor
@@ -133,7 +135,9 @@ async function sendPulse() {
   // erreur Bluetooth simulée (non envoyée)
   const errEvt = maybeSimulatedError();
   if (errEvt) {
-    console.warn(`[SIM ERR] ${errEvt.error} @ ${errEvt.timestamp} (non envoyé)`);
+    await postMeasurement(errEvt);
+    console.warn(`[SIM ERR] ${errEvt.error} @ ${errEvt.timestamp}`);
+    return;
   }
 
   const pulse = randomMeasurementFor('pulse');
