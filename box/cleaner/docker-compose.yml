@@ -1,7 +1,7 @@
 services:
   cleaner:
     image: ial/cleaner
-    container_name: cleaner
+    container_name: cleaner-${STATION_NUMBER}
     command: ["node", "dist/main.js"]
     depends_on:
       - setup-broker
@@ -13,4 +13,5 @@ services:
       - station-network
 networks:
   station-network:
+    name: ${STATION_NETWORK}
     driver: bridge

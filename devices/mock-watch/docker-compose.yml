@@ -1,7 +1,7 @@
 services:
   mock-watch:
     image: ial/mock-watch
-    container_name: mock-watch
+    container_name: mock-watch-${STATION_NUMBER}
     restart: always
     environment:
       - ENDPOINT_URL=${ENDPOINT_URL}
@@ -12,9 +12,10 @@ services:
       - DEVICE_TYPE=${DEVICE_TYPE}
     tty: true
     networks:
-      - ial-station_home-network
+      - home-network
 
 networks:
-  ial-station_home-network:
+  home-network:
     external: true
+    name: ${HOME_NETWORK}
     driver: bridge

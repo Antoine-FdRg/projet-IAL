@@ -50,7 +50,7 @@ CREATE TABLE rel_patient_externe (
     id_patient VARCHAR NOT NULL,
     id_externe UUID NOT NULL,
     type enum_type NOT NULL,
-    PRIMARY KEY (id_patient, id_externe),
+    PRIMARY KEY (id_patient, id_externe, type),
     CONSTRAINT fk_rel_patient FOREIGN KEY (id_patient)
         REFERENCES patient(nss)
         ON DELETE CASCADE,
