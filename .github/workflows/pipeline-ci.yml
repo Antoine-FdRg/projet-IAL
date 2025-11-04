@@ -46,7 +46,6 @@ jobs:
       matrix:
         component:
           - box/broker
-          - box/broker-client
           - box/cleaner
           - box/normalizer
           - box/outlier-filter

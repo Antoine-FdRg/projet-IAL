@@ -6,7 +6,6 @@ export BUILDKIT_PROGRESS=${BUILDKIT_PROGRESS:-plain}
 
 components=(
     "box/broker"
-    "box/broker-client"
     "box/cleaner"
     "box/normalizer"
     "box/outlier-filter"
