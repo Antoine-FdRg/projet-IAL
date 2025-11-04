@@ -12,6 +12,7 @@ components=(
     "box/outlier-filter"
     "box/uploader"
     "save-service"
+    "family-notification-service"
     "analyze-service"
     "box/gatt-server"
     "devices/mock-watch"
