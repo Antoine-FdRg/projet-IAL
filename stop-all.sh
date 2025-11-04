@@ -23,7 +23,8 @@ docker-compose -p ial-cloud \
                -f databases/user-db/docker-compose.yml \
                -f databases/measurement-db/docker-compose.yml \
                -f save-service/docker-compose.yml \
-               -f family-notification-service/docker-compose.yml down -v
+               -f family-notification-service/docker-compose.yml \
+               -f analyze-service/docker-compose.yml down -v
 echo "Cloud services stopped"
 
 echo "✅ All services stopped successfully"

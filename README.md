@@ -137,26 +137,23 @@ Queue : MEASUREMENT.to_split
 }
 ```
 
-#### Splitter -> Save Service
-Queue : MEASUREMENT.to_save
-```json
-{
-    "boxId" : string,
-    "type" : string,
-    "value" : number,
-    "unit" : string,
-    "timestamp": string,
-}
-```
+#### Box Uploader -> Save Service (HTTP)
+Le save-service est une API REST HTTP (pas NATS). Le boitier envoie ses mesures via HTTP POST.
 
-#### Analyzer -> Save Service
-Queue : MEASUREMENT.to_save
+Endpoint: `POST /measurements`
+Headers: `Authorization: Bearer <token>`
+
 ```json
 {
-    "boxId" : string,
-    "type" : string,
-    "fromTimestamp": string,
-    "toTimestamp": string,
+    "boxId": "box1",
+    "dataList": [
+        {
+            "type": "string",
+            "value": "number",
+            "unit": "string",
+            "timestamp": "string"
+        }
+    ]
 }
 ```
 
