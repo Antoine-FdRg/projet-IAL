@@ -1,0 +1,37 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: buffer-db
+    restart: unless-stopped
+    # ports:
+    #   - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpwd
+    volumes:
+      - mongo_data:/data/db
+      - ./init/001-init.js:/docker-entrypoint-initdb.d/001-init.js:ro
+    networks:
+      - station-network
+
+  mongo-express:
+    image: mongo-express:1
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpwd
+      ME_CONFIG_MONGODB_URL: mongodb://root:rootpwd@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    networks:
+      - station-network
+
+volumes:
+  mongo_data:
+
+networks:
+  station-network:
+    driver: bridge

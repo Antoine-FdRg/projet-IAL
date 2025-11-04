@@ -1,0 +1,34 @@
+services:
+  measurement-db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: measurement-db
+    hostname: ${MEASUREMENT_DB_HOST_NAME:-measurement-db}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MEASUREMENT_DB_POSTGRES_DB_NAME:-measurement_db}
+      POSTGRES_USER: ${MEASUREMENT_DB_POSTGRES_USER:-ial_user}
+      POSTGRES_PASSWORD: ${MEASUREMENT_DB_POSTGRES_PASSWORD:-ial_password}
+    ports:
+      - "${MEASUREMENT_DB_POSTGRES_EXTERNAL_PORT:-5433}:5432"
+    volumes:
+      - measurement-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cloud-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${MEASUREMENT_DB_POSTGRES_USER:-ial_user} -d ${MEASUREMENT_DB_POSTGRES_DB:-measurement_db}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  measurement-data:
+    driver: local
+
+networks:
+  cloud-network:
+    driver: bridge

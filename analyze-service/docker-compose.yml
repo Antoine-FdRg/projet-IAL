@@ -1,0 +1,32 @@
+services:
+  analyze-service:
+    container_name: analyze-service
+    image: ial/analyze-service:latest
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - DB_HOST=measurement-db
+      - DB_PORT=5432
+      - DB_NAME=measurement_db
+      - DB_USER=ial_user
+      - DB_PASSWORD=ial_password
+      - DB_POOL_MIN=2
+      - DB_POOL_MAX=10
+    ports:
+      - "${ANALYZE_SERVICE_PORT:-3001}:3001"
+    depends_on:
+      measurement-db:
+        condition: service_healthy
+    networks:
+      - cloud-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cloud-network:
+    driver: bridge

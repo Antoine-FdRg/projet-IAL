@@ -1,0 +1,16 @@
+services:
+  normalizer:
+    image: ial/normalizer
+    container_name: normalizer
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - setup-broker
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+      - NORMALIZER_CONSUME_QUEUE=MEASUREMENT.to_normalize
+      - NORMALIZER_PRODUCER_QUEUE=${NORMALIZER_PRODUCER_QUEUE}
+    networks:
+      - station-network
+networks:
+  station-network:
+    driver: bridge

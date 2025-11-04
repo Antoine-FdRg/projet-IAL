@@ -1,0 +1,24 @@
+services:
+  nats:
+    image: nats:latest
+    hostname: nats-broker
+    container_name: nats-broker
+    command: ["-js"]
+    ports:
+      - "4222:4222"
+    networks:
+      - station-network
+
+  setup-broker:
+    image: ial/setup-stream
+    container_name: setup-stream
+    command: ["node", "dist/main.js"]
+    depends_on:
+      - nats
+    environment:
+      - NATS_SERVER=${NATS_SERVER}
+    networks:
+      - station-network
+networks:
+  station-network:
+    driver: bridge

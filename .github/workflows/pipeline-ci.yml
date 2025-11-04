@@ -1,0 +1,73 @@
+name: CI - Build Docker images
+run-name: ${{ github.actor }} hope for pipeline to succeed
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  docker-build-all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: docker-build-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Make scripts executable + normalize line endings
+        run: |
+          chmod +x build-all.sh || true
+          find . -maxdepth 4 -name build.sh -exec chmod +x {} \; || true
+          sed -i 's/\r$//' build-all.sh || true
+          find . -maxdepth 4 -name build.sh -exec sed -i 's/\r$//' {} \; || true
+
+      - name: Build all images
+        env:
+          DOCKER_BUILDKIT: 1
+          BUILDKIT_PROGRESS: plain
+        run: |
+          set -euo pipefail
+          ./build-all.sh
+
+      - name: List built images (debug)
+        run: docker images
+
+  sonar-analysis:
+    runs-on: ubuntu-latest
+    needs: docker-build-all
+    strategy:
+      matrix:
+        component:
+          - box/broker
+          - box/cleaner
+          - box/normalizer
+          - box/outlier-filter
+          - box/uploader
+          - save-service
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.component }}
+        run: npm ci
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v2
+        with:
+          projectBaseDir: ${{ matrix.component }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io 
