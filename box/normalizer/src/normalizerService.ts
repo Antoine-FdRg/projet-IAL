@@ -1,4 +1,4 @@
-import type {RawMeasurement} from "./type";
+import type { RawMeasurement } from "./type";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -56,16 +56,19 @@ const normalizeMeasurementLogic = (measurement: RawMeasurement): RawMeasurement 
             case 'lbs':
                 normalizedValue = measurement.value * 0.45359237; // lbs to kg
                 normalizedUnit = 'kg';
+                console.log(`[${new Date().toISOString()}] - Normalized lbs to kg`);
                 break;
             case '°f':
             case 'f':
                 // https://www.thoughtco.com/fahrenheit-to-celsius-formula-609230
                 normalizedValue = ((measurement.value - 32) * 5) / 9; // °F to °C
                 normalizedUnit = '°C';
+                console.log(`[${new Date().toISOString()}] - Normalized °F to °C`);
                 break;
             case 'bps':
                 normalizedValue = measurement.value * 60; // bps to bpm
                 normalizedUnit = 'bpm';
+                console.log(`[${new Date().toISOString()}] - Normalized bps to bpm`);
                 break;
             default:
                 break;
