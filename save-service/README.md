@@ -193,9 +193,47 @@ Le service valide automatiquement :
 - Unité présente
 - Timestamp au format ISO 8601
 
-## Authentification
 
-### Tokens des boitiers
+## Sécurité
+Il faut mettre en place HTTPS en production pour sécuriser les échanges entre le boitier et le save-service.
+
+### Exemple de génération de certificats pour mettre en place HTTPS
+
+- Créer une clé privée CA
+
+```shell
+openssl genrsa -out ca.key 4096
+```
+
+- Créer un certificat CA auto-signé
+
+```shell
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "/CN=MyNatsCA"
+```
+
+- Créer une clé serveur
+
+```shell
+openssl genrsa -out server.key 2048
+```
+
+- CSR (demande de signature) selon le hostname du serveur
+
+```shell
+openssl req -new -key server.key -out server.csr -subj "/CN=domaine.exemple.com"
+```
+
+- Signer le certificat serveur avec la CA
+
+```shell
+openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
+```
+
+Le serveur requiert `server.crt` et `server.key` pour démarrer en TLS. Le client requiert `ca.pem` pour vérifier l'identité du broker lorsqu'il s'y connecte
+
+### Authentification
+
+#### Tokens des boitiers
 
 Chaque boitier est identifié par un UUID qui sert à la fois d'identifiant et de token d'authentification.
 
@@ -203,7 +241,7 @@ Pour tester, utiliser les UUIDs de développement :
 - Box 1 : `550e8400-e29b-41d4-a716-446655440001`
 - Box 2 : `550e8400-e29b-41d4-a716-446655440002`
 
-### Exemple de requête avec curl
+#### Exemple de requête avec curl
 
 ```bash
 curl -X POST http://localhost:3000/measurements \
@@ -222,7 +260,7 @@ curl -X POST http://localhost:3000/measurements \
   }'
 ```
 
-### Ajouter un nouveau boitier
+#### Ajouter un nouveau boitier
 
 Voir la documentation de la base de données : `databases/measurement-db/README.md`
 
