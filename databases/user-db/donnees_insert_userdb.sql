@@ -31,7 +31,8 @@ INSERT INTO rel_patient_externe (id_patient, id_externe, type)
 VALUES
 ('2980548754123', (SELECT id FROM externe WHERE nom='Bernard' AND prenom='Paul'), 'docteur'),
 ('2980548754123', (SELECT id FROM externe WHERE nom='Moreau' AND prenom='Tina'), 'proche'),
-('1011275432198', (SELECT id FROM externe WHERE nom='Lefevre' AND prenom='Camille'), 'infirmier');
+('1011275432198', (SELECT id FROM externe WHERE nom='Lefevre' AND prenom='Camille'), 'infirmier'),
+('1011275432198', (SELECT id FROM externe WHERE nom='Bernard' AND prenom='Paul'), 'proche');
 
 -- 🔹 Relations Patient ↔ Device
 INSERT INTO rel_patient_device (id_patient, type_device)

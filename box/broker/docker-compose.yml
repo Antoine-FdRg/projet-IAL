@@ -2,16 +2,18 @@ services:
   nats:
     image: nats:latest
     hostname: nats-broker
-    container_name: nats-broker
-    command: ["-js"]
-    ports:
-      - "4222:4222"
+    container_name: nats-broker-${STATION_NUMBER}
+    command: ["-js","-sd", "/data"]
+    volumes:
+      - nats-data:/data
+    # ports:
+    #   - "${NATS_EXTERNAL_PORT}:4222"
     networks:
       - station-network
 
   setup-broker:
     image: ial/setup-stream
-    container_name: setup-stream
+    container_name: setup-stream-${STATION_NUMBER}
     command: ["node", "dist/main.js"]
     depends_on:
       - nats
@@ -21,4 +23,7 @@ services:
       - station-network
 networks:
   station-network:
+    name: ${STATION_NETWORK}
     driver: bridge
+volumes:
+  nats-data:

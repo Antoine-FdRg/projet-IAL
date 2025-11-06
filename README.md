@@ -1,248 +1,209 @@
-# projet-IAL
-## Configuration
-### Configuration
-Le fichier `.env.queues` à la racine du projet contient les noms des différentes queues utilisées dans la pipeline. Il permet de définir l'orchestration des différents nodes de la pipeline en fonction des queues configurées.
-Le fichier `.env.docker` à la racine du projet contient les variables d'environnement suivnates :
-- NATS_URL : L'URL du broker NATS
-- BOX_PUSH_SCHEDULE_INTERVAL : L'intervalle de push des données depuis le boitier (box) vers le broker NATS en millisecondes.
+# Projet IAL – Suivi et maintient de personne à domicile
 
-## Démarrage
-### 1. Construire toutes les images docker
-Dans un git bash ou wsl :
-```bash
-./build-all.sh
-```
-Ce script construit tous les services de la pipeline NATS (`box/*`) ainsi que le `save-service`.
+## Composition de l'Équipe
 
-### 2. Démarrer les services cloud
-Dans un git bash ou wsl :
-```bash
-./start-cloud.sh
-```
-Ce script démarre le projet docker compose `ial-cloud` et le network `cloud_network` permettant la communication entre l'ensemble des services cloud :
-- le Save Service
-- la Measurement DB
-- la User DB
-- l'Analyse Service
-- le Family Notif Service
+- [**Emma ALLAIN**](https://github.com/emmaallain)
+- [**Roxane BACON**](https://github.com/RoxaneBacon)
+- [**Antoine FADDA RODRIGUEZ**](https://github.com/Antoine-FdRg)
+- [**Baptiste LACROIX**](https://github.com/BaptisteLacroix)
+- [**Théo VIDAL**](https://github.com/Dalvii)
 
-En lançant le docker compose de save-service, le réseau `internet_network` est créé pour permettre la communication entre l'uploader de la station et le save-service cloud. Il est donc essentiel de démarrer le cloud avant la station.
+## Description du sujet
 
-### 3. Démarrer les services de la station
-**⚠️ Attention** : Il est impératif d'avoir démarré les services cloud avant de lancer la station pour que l'uploader puisse se connecter au save-service.
+Le projet IAL a pour objectif de concevoir un système de suivi de santé à domicile pour les personnes âgées.  
+Ce système s’appuie sur une station connectée associée à différents dispositifs médicaux (montre, balance, etc.) permettant de mesurer plusieurs paramètres physiologiques :
 
-Dans un git bash ou wsl :
-```bash
-./start-station.sh
-```
-Ce script démarre le projet docker compose `ial-station` et le network `station_network` permettant la communication entre l'ensemble des services de la station :
-- Le serveur BLE
-- Le broker NATS
-- le Cleaner
-- le Normalizer
-- l'Outlier filter
-- la Buffer DB
-- l'Uploader
+- Poids
+- Pouls
+- Température corporelle
+- Nombre de pas
+
+Les données sont ensuite transmises automatiquement aux différents acteurs concernés :
+
+- Les **médecins**, pour le suivi médical et la détection d’anomalies.
+- Les **infirmiers**, pour la planification des visites.
+- Les **proches**, pour être rassurés via un résumé hebdomadaire.
+- L’**administrateur**, pour la supervision technique et la maintenance du système.
+
+## Décisions initiales
+
+### Client
+
+Le médecin est considéré comme le client principal, proposant la solution aux proches de la personne âgée.
+
+### Installation
+
+- Les stations et les dispositifs sont configurés par un administrateur.
+- Un prestataire se charge de l’installation du matériel chez la personne âgée.
+
+### Mises à jour
+
+Le système est conçu pour être auto-hébergé, avec un backend pouvant tourner sur Kubernetes.  
+Les stations disposent d’un mécanisme de mise à jour automatique sécurisé :
+
+1. Un script vérifie régulièrement la version installée.
+2. La station télécharge la mise à jour depuis un serveur HTTPS.
+3. Vérification de la signature et de l’intégrité du binaire.
+4. Installation sur une partition secondaire (avec backup).
+5. Rollback automatique en cas d’échec au démarrage.
+
+### Contraintes techniques
+
+- Une station = un patient (relation fixe).
+- Les objets connectés actuels ne sont pas évolutifs (pas de mise à jour firmware).
+- Intégration exclusive de nos propres appareils.
+
+## Liste des fonctionnalités principales
+
+### Personnes âgées
+
+- Station centrale connectée à Internet.
+- Balance et bracelet connectés à la station.
+- Capteurs mesurant :
+  - le pouls,
+  - la température corporelle,
+  - le poids,
+  - le nombre de pas / activité physique.
+
+### Infirmiers
+
+- Web app affichant les données agrégées des patients.
+- Consultation des mesures lors des visites ponctuelles à domicile.
+
+### Docteurs
+
+- Accès à des rapports analytiques détaillés.
+- Alertes automatiques en cas de valeurs anormales.
+- Possibilité d’ordonner une visite exceptionnelle à un infirmier.
+
+### Proches
+
+- Notifications WhatsApp hebdomadaires sur l’état général du proche :
+  - ☀️ Tout va bien
+  - ☁️ Quelques difficultés
+  - 🧑‍🦼 Faible activité
+
+### Administrateur
+
+- Supervision des instances et objets IoT.
+- Création / modification des instances de déploiement (stack complète par région).
+- Déploiement des mises à jour globales (backend et stations).
+
+## User Stories
+
+### 🟣 Epic 1 : Assistance et sécurité des personnes âgées
+
+> En tant que **personne âgée**,  
+> je veux être suivie sur mon état de santé (pouls, poids, pas, etc.) **sans effort particulier**,  
+> afin que mes proches et soignants puissent **suivre mon évolution.**
 
 
-### Arrêter tous les services
-```bash
-./stop-all.sh
-```
+### 🔵 Epic 2 : Suivi médical par les soignants
 
-## Mock Watch - Simulateur de montre connectée
+> En tant qu’**infirmier ou médecin**,
+> je veux accéder aux **données de santé de mes patients de manière claire et synthétique** via une interface claire, remontant les signaux et évènements importants
+> afin de **mieux préparer mes visites **
 
-Simulateur générant des données de test pour démontrer le fonctionnement de la pipeline (cleaner, normalizer, outlier-filter).
+> En tant que **médecin**,
+> je veux pouvoir **consulter les données de santé détaillées** à plus ou moins longs termes de mes patients
+> afin de **disposer d’une vision complète** lors des rendez-vous médicaux et de les interpréter moi-même
 
-### Utilisation
+> En tant que **médecin**
+> je veux **recevoir une notification en cas d’anomalie de santé** afin de **décider rapidement après analyse si je dois ordonner une visite infirmière**.
 
-```bash
-cd devices/mock-watch
-npm install
-npm run dev
-```
+> En tant que **médecin**
+> je veux pouvoir **remplir le dossier du patient** à l’aide d’un formulaire
+> afin d’**initialiser ses informations personnelles** lors de son inscription
 
-### Système de scénarios
 
-Le mock-watch génère différents types de données selon une distribution cyclique prédéfinie :
-- **70% Données normales** : Valeurs physiologiques réalistes (36-38°C, 68-72 kg, 60-90 bpm)
-- **15% Normalisation** : Données en °F, lbs, bps nécessitant conversion
-- **8% Outliers valides** : Valeurs extrêmes mais acceptables (32.5-41.5°C, 20-120 kg, 45-245 bpm)
-- **3% Outliers rejetés** : Hors limites pour tester le filtre (<32°C, >500 kg, >250 bpm)
-- **2% Données malformées** : Champs manquants/invalides pour tester le cleaner
-- **2% Erreurs Bluetooth** : Messages d'erreur simulés
+### 🟢 Epic 3 : Communication avec les proches
 
-**Intervalles** : Pulse toutes les 5s, autres mesures toutes les 15s
+> En tant que **proche**,  
+> je veux recevoir **un récapitulatif hebdomadaire** de l’état de santé général,  
+> afin d’être **rassuré et informé** de l’évolution de mon proche.
 
-## La pipeline
-[Architecture de la pipeline](https://www.notion.so/Diagramme-composants-Data-Pipeline-280b70b82f6b80f48968cb4c271ec0b5)
-### Données échangées
-#### Boitier (box) -> Cleaner
-Queue : MEASUREMENT.to_clean
-```json
-{
-    "boxId": string,
-    "dataList": [
-        {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
-        },
-        ...
-    ]
-}
-```
 
-#### Cleaner -> Outlier filter
-Queue : MEASUREMENT.to_outlierfilter
-```json
-{
-    "boxId": string,
-    "dataList": [
-        {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
-        },
-        ...
-    ]
-}
-```
+### 🟠 Epic 4 : Supervision et administration
 
-#### Outlier filter -> Normalizer
-Queue : MEASUREMENT.to_normalize
-```json
-{
-    "boxId": string,
-    "dataList": [
-        {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
-        },
-        ...
-    ]
-}
-```
+> En tant qu’**administrateur**,
+> je veux pouvoir créer des utilisateurs et relier leurs objets connectés au système en entrant un identifiant unique (utilisé dans le nom du topic de communication) dans la station et les objets
+> afin de facilement intégrer des nouveaux clients.
 
-#### Normalizer -> Analyzer
-Queue : MEASUREMENT.to_analyze
-```json
-{
-    "boxId": string,
-    "dataList": [
-        {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
-        },
-        ...
-    ]
-}
-```
-#### Normalizer -> Splitter
-Queue : MEASUREMENT.to_split
-```json
-{
-    "boxId": string,
-    "dataList": [
-        {
-            "type" : string
-            "value" : number,
-            "unit" : string,
-            "timestamp": string
-        },
-        ...
-    ]
-}
-```
+> En tant qu’**administrateur**,
+> je veux pouvoir **surveiller l’état du système et des appareils connectés** tel que la date de dernière connexion, la version software installée pour chaque station/devices, et le dernier rapport de la station
+> afin de **détecter rapidement tout problème** de fonctionnement.
 
-#### Box Uploader -> Save Service (HTTP)
-Le save-service est une API REST HTTP (pas NATS). Le boitier envoie ses mesures via HTTP POST.
+> En tant qu’**administrateur**,
+> je veux pouvoir **créer le dossier du patient** à remplir par le médecin
+> afin de **détecter rapidement tout problème de fonctionnement.**
 
-Endpoint: `POST /measurements`
-Headers: `Authorization: Bearer <token>`
+> En tant qu’**administrateur**,
+> je veux pouvoir **déployer des mises à jours** sur le système global (backend via kubernetes, station via leur script d’update)
+> afin de **garantir la mise à jour des systèmes et leur sécurité**
 
-```json
-{
-    "boxId": "box1",
-    "dataList": [
-        {
-            "type": "string",
-            "value": "number",
-            "unit": "string",
-            "timestamp": "string"
-        }
-    ]
-}
-```
 
-## SonarQube
-Le projet utilise sonarqube (sonarcloud) pour l'analyse de la qualité du code dans le CI/CD : https://sonarcloud.io/organizations/antoine-fdrg/projects.
-Les fichiers de configuration `sonar-project.properties` de chaque projet permettent de définir les paramètres d'analyse.
-Pour créer le projet sur sonarcloud, il faut lancer la commande suivante dans le répertoire racine du projet concerné dans un git bash ou wsl :
-```bash
-export SONAR_TOKEN="token_a_prendre_sur_la_conversation_discord" && npx sonar-scan
-```
+## Découpage en domaines
 
-## Base de données
-### TimescaleDB
-Le projet utilise TimescaleDB (extension PostgreSQL optimisée pour les séries temporelles) pour stocker les mesures.
+![](./doc/images/DDD.png)
 
-Configuration dans `databases/measurement-db`:
-- Hypertables pour partitionnement automatique par timestamp
-- Continuous aggregates pour statistiques pré-calculées
-- Retention policy de 90 jours
-- Deux tables : `boxes` (authentification) et `measurements` (données)
+### Core Domain
 
-Démarrer uniquement la base de données :
-```bash
-cd databases/measurement-db && docker-compose up -d
-```
+> Domaine médical – cœur de la valeur métier
 
-Connexion à la base :
-```bash
-docker exec -it ial-measurement-db psql -U ial_user -d measurement_db
-```
+- Être au courant régulièrement de l’état de santé du patient
+- Agir rapidement en cas d’état de santé problématique
+- Simplifier le suivi médical personnalisé ponctuel d’un patient
+- Simplifier/Accélérer la lecture des infos de santé des patients pendant les visites
 
-## Sécurité
-### Authentification Save Service
-Le save-service utilise des tokens Bearer pour authentifier les boitiers :
-- Tokens stockés en SHA-256 dans la table `boxes`
-- Header requis : `Authorization: Bearer <token>`
-- Tokens de test : `box1-secret-token`, `box2-secret-token`
 
-### TLS NATS 
-TLS permet de chiffrer les échanges entre les clients et le broker NATS. Un certificat serveur est utilisé pour authentifier le broker auprès des clients.
-#### Exemple de génération de certificats
+### **Supportive Domain**
 
-- Créer une clé privée CA
-``` shell
-openssl genrsa -out ca.key 4096
-``` 
+> Fonctionnalités de support au cœur métier
 
-- Créer un certificat CA auto-signé
-``` shell
-openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.pem -subj "/CN=MyNatsCA"
-```
+- Gestion de la liste des patients
+- Gestion administrative du personnel soignant
+- Accès sécurisé aux dossiers médicaux
+- Traitement des alertes
 
-- Créer une clé serveur
-``` shell
-openssl genrsa -out server.key 2048
-```
 
-- CSR (demande de signature) selon le hostname du broker
-```shell
-openssl req -new -key server.key -out server.csr -subj "/CN=nats\-broker"
-```
+### **Generic Domain**
 
-- Signer le certificat serveur avec la CA
-```shell
-openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256
-```
+> Éléments techniques réutilisables
 
-Le serveur requiert `server.crt` et `server.key` pour démarrer en TLS. Le client requiert `ca.pem` pour vérifier l'identité du broker lorsqu'il s'y connecte
+- Envoi de messages WhatsApp
+- Les appareils connectés (les montres sont existantes)
+
+
+## Analyse des risques
+
+Une étude approfondie des risques a été établie tout au long du projet: [consulter l'analyse des risques](./doc/RISQUES.md)
+
+## Architecture
+Le projet est organisé en trois niveaux d'infrastructure :
+- **Device** : Dispositifs IoT (montres connectées simulées)
+- **Station IoT Gateway** : Station de collecte avec pipeline basée sur un broker NATS et services de traitement, plus d'informations dans la [documentation IoT Gateway](./box/README.md)
+- **Cloud** : Services cloud pour le stockage persistant (bases de données et API), plus d'informations dans la [documentation cloud](./doc/CLOUD.md)
+
+## Démonstration
+
+Dans le cadre du POC présenté en séance, certaines adaptations ont été apportées pour des raisons de temps et de contraintes matérielles tout en gardant l'aspect fonctionnel du projet :
+
+- Les appareils physiques (comme les montres connectées) ont été simulés via une API REST. Cette API envoie des données en conditions proches du réel, telles que le pouls, le poids, le nombre de pas et la température, tout en intégrant volontairement divers types d’erreurs (valeurs incohérentes, unités incorrectes, messages malformés) pour tester par la suite notre pipeline et la robustesse de nos systèmes.
+
+- Le serveur de communication Bluetooth prévu initialement a été remplacé par un serveur REST, facilitant les échanges et la démo sans dépendance matérielle.
+- Dans la version de démonstration, la notification de l’état de santé d’un patient à ses proches ne passe pas par WhatsApp comme spécifié à l’origine, mais par Discord.
+
+## Conclusion
+
+Le projet IAL vise à proposer une solution intégrée, sécurisée et évolutive pour le suivi des personnes âgées à domicile.  
+En combinant IoT, cloud, et supervision médicale, l’objectif est de réduire les déplacements inutiles, anticiper les situations critiques et simplifier la collaboration entre médecins, infirmiers et proches.
+
+## Contribution globale de l'équipe
+
+| Nom             | Prenom   | Description des missions principales                                                                                                      |
+|  | -- | -- |
+| ALLAIN          | Emma     | Analyse de risques (matrices & bowties), client Nats du boitier, implémentation de la Buffer DB et de la communication BLE/GATT de l'IoT gateway |
+| BACON           | Roxane   | Analyse de risques (matrices & bowties), réflexion et implémentation de la userDB, documentation et illustration du sujet                 |
+| FADDA RODRIGUEZ | Antoine  | Implémentation de la pipeline, documentation, broker Nats du boitier                                                                      |
+| LACROIX         | Baptiste | Implémentation de la pipeline et de l'uploader dans la Measurement DB                                                                      |
+| VIDAL           | Théo     | Implémentation de la Measurement DB, du système de notifications aux proches, et de la pipeline                                            |

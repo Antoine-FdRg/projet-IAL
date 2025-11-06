@@ -1,7 +1,7 @@
 services:
   uploader:
     image: ial/uploader
-    container_name: uploader
+    container_name: uploader-${STATION_NUMBER}
     depends_on:
       - setup-broker
     environment:
@@ -20,6 +20,7 @@ services:
 
 networks:
   station-network:
+    name: ${STATION_NETWORK}
     driver: bridge
   internet-network:
     external: true
